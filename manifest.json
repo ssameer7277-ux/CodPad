@@ -1,0 +1,22 @@
+{
+  "name": "CodePad",
+  "short_name": "CodePad",
+  "description": "HTML Editor & Live Preview",
+  "start_url": "/CodPad/",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#6c63ff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/6c63ff/ffffff?text=CP",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/6c63ff/ffffff?text=CP",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
