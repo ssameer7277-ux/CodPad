@@ -9,14 +9,16 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://via.placeholder.com/192x192/6c63ff/ffffff?text=CP",
+      "src": "https://raw.githubusercontent.com/googlesamples/web-fundamentals/master/fundamentals/getting-started/your-first-progressive-web-app/images/touch/homescreen192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://via.placeholder.com/512x512/6c63ff/ffffff?text=CP",
+      "src": "https://raw.githubusercontent.com/googlesamples/web-fundamentals/master/fundamentals/getting-started/your-first-progressive-web-app/images/touch/homescreen512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
