@@ -1,7 +1,7 @@
 {
   "name": "CodePad",
   "short_name": "CodePad",
-  "description": "HTML Editor & Live Preview",
+  "description": "HTML Editor &amp; Live Preview",
   "start_url": "/CodPad/",
   "display": "standalone",
   "background_color": "#0e1117",
