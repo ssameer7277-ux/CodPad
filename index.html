@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CodePad</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1117;--s1:#161b25;--s2:#1d2333;--s3:#252c3d;
+  --border:#2d3450;--acc:#6c63ff;--acc2:#ff6b9d;--acc3:#4ecdc4;
+  --red:#ff4757;--text:#dde3f5;--t2:#7b849e;--t3:#434c66;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}
+.app{display:flex;flex-direction:column;height:100%;}
+
+/* HEADER */
+.hdr{height:50px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;gap:6px;flex-shrink:0;z-index:50;}
+.logo{font-weight:700;font-size:16px;color:var(--acc);letter-spacing:-.5px;flex-shrink:0;}
+.logo b{color:var(--acc2);}
+.fname-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;}
+.fname-inp{background:transparent;border:none;outline:none;color:var(--t2);
+  font-size:12px;font-family:'Inter',sans-serif;text-align:center;width:100%;
+  border-bottom:1px solid transparent;transition:all .2s;padding:2px 4px;border-radius:4px;}
+.fname-inp:focus{border-bottom-color:var(--acc);color:var(--text);background:var(--s3);}
+.ib{width:34px;height:34px;border:none;cursor:pointer;border-radius:8px;
+  background:transparent;color:var(--t2);display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;transition:all .15s;}
+.ib:active{background:var(--s3);color:var(--text);}
+.ib.save{background:var(--acc);color:#fff;}
+.ib.save:active{background:#5952d4;}
+
+/* VIEW BAR */
+.vsw{height:42px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 8px;gap:5px;flex-shrink:0;}
+.vt{flex:1;height:28px;border:none;cursor:pointer;border-radius:7px;
+  background:var(--s3);color:var(--t2);font-size:11px;font-weight:500;
+  font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
+.vt.on{background:var(--acc);color:#fff;}
+.dir-btn{height:28px;padding:0 10px;border:1px solid var(--border);cursor:pointer;
+  border-radius:7px;background:var(--s2);color:var(--t2);font-size:11px;
+  font-weight:500;font-family:'Inter',sans-serif;display:flex;align-items:center;
+  gap:4px;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.dir-btn:active{background:var(--s3);border-color:var(--acc);color:var(--acc3);}
+
+/* MAIN + PANELS */
+.main-wrap{flex:1;display:flex;overflow:hidden;}
+.main{flex:1;display:flex;overflow:hidden;}
+
+/* split vertical top/bottom */
+.main.split-v{flex-direction:column;}
+.main.split-v .pane-ed{width:100%;flex:1;min-height:60px;}
+.main.split-v .pane-pv{width:100%;flex:1;min-height:60px;}
+.main.split-v .divider{width:100%;height:6px;cursor:row-resize;flex-shrink:0;
+  background:var(--border);transition:background .15s;}
+.main.split-v .divider:hover{background:var(--acc);}
+
+/* split horizontal left/right */
+.main.split-h{flex-direction:row;}
+.main.split-h .pane-ed{height:100%;flex:1;min-width:60px;}
+.main.split-h .pane-pv{height:100%;flex:1;min-width:60px;}
+.main.split-h .divider{height:100%;width:6px;cursor:col-resize;flex-shrink:0;
+  background:var(--border);transition:background .15s;}
+.main.split-h .divider:hover{background:var(--acc);}
+
+/* editor only */
+.main.v-ed .pane-ed{flex:1;width:100%;height:100%;}
+.main.v-ed .pane-pv,.main.v-ed .divider{display:none;}
+
+/* preview only */
+.main.v-pv .pane-pv{flex:1;width:100%;height:100%;}
+.main.v-pv .pane-ed,.main.v-pv .divider{display:none;}
+
+.pane{display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;}
+.pane-hdr{height:24px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 8px;gap:5px;
+  font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--t3);
+  text-transform:uppercase;flex-shrink:0;}
+.dot{width:6px;height:6px;border-radius:50%;}
+.dot-ed{background:var(--acc);}
+.dot-pv{background:var(--acc3);}
+
+#editor{flex:1;width:100%;border:none;outline:none;resize:none;
+  background:var(--bg);color:#b0bcff;
+  font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;
+  padding:10px 12px;tab-size:2;caret-color:var(--acc2);
+  -webkit-overflow-scrolling:touch;overflow-y:auto;}
+#pvframe{flex:1;width:100%;border:none;background:#fff;min-height:0;}
+
+/* BOTTOM TAGS */
+.bot{height:42px;background:var(--s1);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 6px;gap:4px;flex-shrink:0;overflow-x:auto;}
+.bot::-webkit-scrollbar{display:none;}
+.tg{padding:4px 8px;border-radius:6px;border:1px solid var(--border);
+  background:var(--s2);color:var(--acc3);font-family:'JetBrains Mono',monospace;
+  font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;
+  -webkit-user-select:none;user-select:none;}
+.tg:active{background:var(--acc);color:#fff;border-color:var(--acc);}
+
+/* DRAWER */
+.drw-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;}
+.drw-ov.open{display:block;}
+.drw{position:fixed;right:0;top:0;bottom:0;width:min(285px,86vw);
+  background:var(--s1);border-left:1px solid var(--border);z-index:201;
+  display:flex;flex-direction:column;transform:translateX(100%);
+  transition:transform .22s ease;}
+.drw-ov.open .drw{transform:translateX(0);}
+.drw-hdr{height:50px;display:flex;align-items:center;padding:0 14px;
+  border-bottom:1px solid var(--border);font-weight:600;font-size:14px;gap:8px;}
+.drw-close{margin-left:auto;width:26px;height:26px;border:none;
+  background:var(--s3);color:var(--t2);border-radius:7px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:13px;}
+.drw-body{flex:1;overflow-y:auto;padding:10px 14px;}
+.drw-body::-webkit-scrollbar{width:3px;}
+.drw-body::-webkit-scrollbar-thumb{background:var(--border);}
+.sec-t{font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--acc2);
+  text-transform:uppercase;margin:12px 0 6px;}
+.d-sel{width:100%;background:var(--s2);border:1px solid var(--border);
+  color:var(--t2);border-radius:8px;padding:7px 9px;font-size:12.5px;
+  font-family:'Inter',sans-serif;outline:none;cursor:pointer;margin-bottom:5px;}
+.d-sel:focus{border-color:var(--acc);}
+.color-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.cswatch{width:32px;height:32px;border-radius:7px;border:2px solid var(--border);
+  overflow:hidden;position:relative;flex-shrink:0;cursor:pointer;}
+.cswatch input{position:absolute;width:200%;height:200%;top:-50%;left:-50%;
+  opacity:0;cursor:pointer;border:none;}
+.csp{width:100%;height:100%;background:#b0bcff;}
+.clbl{font-size:12px;color:var(--t2);}
+.d-btn{width:100%;padding:9px 12px;border:none;cursor:pointer;border-radius:8px;
+  font-size:12.5px;font-weight:500;font-family:'Inter',sans-serif;
+  display:flex;align-items:center;gap:8px;margin-bottom:5px;transition:all .15s;}
+.d-btn svg{width:13px;height:13px;flex-shrink:0;}
+.d-ghost{background:var(--s2);color:var(--text);border:1px solid var(--border);}
+.d-ghost:active{background:var(--s3);}
+.d-danger{background:rgba(255,71,87,.1);color:var(--red);border:1px solid rgba(255,71,87,.18);}
+.d-danger:active{background:rgba(255,71,87,.2);}
+.d-success{background:rgba(108,99,255,.12);color:#9d97ff;border:1px solid rgba(108,99,255,.2);}
+.d-success:active{background:rgba(108,99,255,.22);}
+.d-teal{background:rgba(78,205,196,.1);color:var(--acc3);border:1px solid rgba(78,205,196,.18);}
+.d-teal:active{background:rgba(78,205,196,.2);}
+
+/* MODALS (bottom sheet) */
+.mod-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);
+  backdrop-filter:blur(4px);z-index:300;align-items:flex-end;justify-content:center;}
+.mod-ov.open{display:flex;}
+.mod{background:var(--s1);border:1px solid var(--border);border-radius:18px 18px 0 0;
+  padding:16px;width:100%;max-height:84vh;overflow-y:auto;
+  box-shadow:0 -8px 36px rgba(0,0,0,.5);}
+.mod::-webkit-scrollbar{width:3px;}
+.mod::-webkit-scrollbar-thumb{background:var(--border);}
+.mod-t{font-weight:700;font-size:14px;display:flex;align-items:center;
+  gap:7px;margin-bottom:12px;}
+.mod-close{margin-left:auto;width:24px;height:24px;border:none;background:var(--s3);
+  color:var(--t2);border-radius:6px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:13px;}
+.inp-row{display:flex;gap:6px;margin-bottom:10px;}
+.m-inp{flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);
+  border-radius:7px;padding:7px 10px;font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+.m-inp:focus{border-color:var(--acc);}
+.m-btn{padding:7px 13px;border:none;cursor:pointer;border-radius:7px;
+  font-size:13px;font-weight:500;font-family:'Inter',sans-serif;
+  background:var(--acc);color:#fff;white-space:nowrap;}
+.flist{display:flex;flex-direction:column;gap:4px;}
+.fitem{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;
+  background:var(--s2);border:1px solid transparent;cursor:pointer;transition:all .15s;}
+.fitem.on,.fitem:active{border-color:var(--acc);}
+.fn{flex:1;font-size:12.5px;font-weight:500;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.fd{font-size:10px;color:var(--t3);white-space:nowrap;}
+.fdel{background:none;border:none;color:var(--t3);cursor:pointer;
+  padding:3px 6px;border-radius:5px;font-size:12px;}
+.fdel:active{background:var(--red);color:#fff;}
+.empty{color:var(--t2);font-size:12px;text-align:center;padding:18px 0;}
+
+/* GUIDE */
+.g-lang-row{display:flex;gap:5px;margin-bottom:10px;}
+.g-lang{padding:5px 12px;border-radius:6px;border:1px solid var(--border);
+  background:var(--s2);color:var(--t2);cursor:pointer;font-size:11.5px;transition:all .15s;}
+.g-lang.on{background:var(--acc);border-color:var(--acc);color:#fff;}
+.g-hint{font-size:11px;color:var(--t3);margin-bottom:8px;}
+.g-cats{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.g-cat-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border);
+  background:var(--s2);color:var(--t2);font-size:10.5px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;}
+.g-cat-btn.on{background:var(--s3);border-color:var(--acc2);color:var(--acc2);}
+.g-section{display:none;}
+.g-section.show{display:block;}
+.gc-t{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--acc2);
+  text-transform:uppercase;margin:10px 0 5px;}
+.g-sec-desc{font-size:11.5px;color:var(--t2);margin-bottom:8px;line-height:1.5;
+  background:var(--s2);border-radius:7px;padding:8px 10px;border:1px solid var(--border);}
+.g-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px;}
+.g-tag{padding:5px 9px;border-radius:7px;background:var(--s3);
+  border:1px solid var(--border);cursor:pointer;transition:all .15s;
+  -webkit-user-select:none;user-select:none;}
+.g-tag:active{background:rgba(108,99,255,.2);border-color:var(--acc);}
+.g-tag code{font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  color:var(--acc3);display:block;}
+.g-tag small{font-size:9.5px;color:var(--t2);display:block;margin-top:1px;}
+.g-lang-sec{display:none;}
+.g-lang-sec.show{display:block;}
+
+/* TAG DETAIL POPUP */
+.tag-popup{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;
+  display:flex;align-items:flex-end;justify-content:center;}
+.tag-popup-inner{background:var(--s1);border:1px solid var(--border);
+  border-radius:18px 18px 0 0;padding:20px;width:100%;
+  max-height:80vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.6);}
+.tag-popup-inner::-webkit-scrollbar{width:3px;}
+.tag-popup-inner::-webkit-scrollbar-thumb{background:var(--border);}
+.tp-name{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.tp-code{background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--acc3);}
+.tp-lbl{font-weight:600;font-size:13px;color:var(--text);flex:1;}
+.tp-x{width:26px;height:26px;background:var(--s2);border:none;border-radius:7px;
+  color:var(--t2);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:13px;flex-shrink:0;}
+.info-box{background:var(--bg);border-radius:10px;padding:12px;
+  margin-bottom:10px;border:1px solid var(--border);}
+.info-box-title{font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:5px;}
+.info-box-body{font-size:12.5px;color:var(--text);line-height:1.6;}
+.snip-pre{font-family:'JetBrains Mono',monospace;font-size:11px;color:#8899cc;
+  line-height:1.65;white-space:pre-wrap;word-break:break-all;margin:0;}
+.tp-btns{display:flex;gap:8px;margin-top:14px;}
+.tp-insert{flex:1;padding:12px;background:var(--acc);color:white;border:none;
+  border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;
+  font-family:'Inter',sans-serif;}
+.tp-cancel{flex:1;padding:12px;background:var(--s2);color:var(--text);
+  border:1px solid var(--border);border-radius:9px;cursor:pointer;
+  font-size:13px;font-family:'Inter',sans-serif;}
+
+/* TOAST */
+.toast{position:fixed;bottom:52px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--s2);border:1px solid var(--acc);border-radius:18px;
+  padding:6px 14px;font-size:11.5px;color:var(--text);
+  box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transition:all .2s;
+  pointer-events:none;white-space:nowrap;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">Code<b>Pad</b></div>
+  <div class="fname-wrap">
+    <input class="fname-inp" id="fnameInp" type="text" value="untitled.html"
+      placeholder="filename.html"
+      onblur="renameCur(this.value)"
+      onkeydown="if(event.key==='Enter')this.blur()">
+  </div>
+  <button class="ib save" onclick="saveFile()" title="Save">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/>
+      <polyline points="7 3 7 8 15 8"/>
+    </svg>
+  </button>
+  <button class="ib" onclick="openDrawer()" title="Menu">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</div>
+
+<!-- VIEW BAR -->
+<div class="vsw">
+  <button class="vt" id="vt-ed" onclick="setView('v-ed')">✏️ Editor</button>
+  <button class="vt on" id="vt-sp" onclick="setView('split')">⊞ Split</button>
+  <button class="vt" id="vt-pv" onclick="setView('v-pv')">👁 Preview</button>
+  <button class="dir-btn" id="dirBtn" onclick="toggleDir()" title="Toggle split direction">
+    <svg id="dirIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+    </svg>
+    <span id="dirLbl">↕</span>
+  </button>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="main split-v" id="mainArea">
+    <div class="pane pane-ed" id="edPane">
+      <div class="pane-hdr"><div class="dot dot-ed"></div>EDITOR</div>
+      <textarea id="editor" spellcheck="false" autocorrect="off"
+        autocapitalize="off" placeholder="Write HTML here..."></textarea>
+    </div>
+    <div class="divider" id="divider"></div>
+    <div class="pane pane-pv" id="pvPane">
+      <div class="pane-hdr"><div class="dot dot-pv"></div>PREVIEW</div>
+      <iframe id="pvframe" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM TAGS -->
+<div class="bot">
+  <button class="tg" onclick="ins('h1')">h1</button>
+  <button class="tg" onclick="ins('h2')">h2</button>
+  <button class="tg" onclick="ins('h3')">h3</button>
+  <button class="tg" onclick="ins('p')">p</button>
+  <button class="tg" onclick="ins('div')">div</button>
+  <button class="tg" onclick="ins('span')">span</button>
+  <button class="tg" onclick="ins('a href=&quot;&quot;')">a</button>
+  <button class="tg" onclick="insSelf('img src=&quot;&quot; alt=&quot;&quot;')">img</button>
+  <button class="tg" onclick="ins('ul')">ul</button>
+  <button class="tg" onclick="ins('li')">li</button>
+  <button class="tg" onclick="ins('button')">btn</button>
+  <button class="tg" onclick="insSelf('input type=&quot;text&quot;')">input</button>
+  <button class="tg" onclick="ins('style')">style</button>
+  <button class="tg" onclick="ins('script')">script</button>
+  <button class="tg" onclick="ins('table')">table</button>
+  <button class="tg" onclick="ins('form')">form</button>
+  <button class="tg" onclick="insBoiler()">⚡ Full</button>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<!-- DRAWER -->
+<div class="drw-ov" id="drwOv" onclick="if(event.target===this)closeDrawer()">
+  <div class="drw">
+    <div class="drw-hdr">⚙️ Options
+      <button class="drw-close" onclick="closeDrawer()">✕</button>
+    </div>
+    <div class="drw-body">
+      <div class="sec-t">Editor Font</div>
+      <select class="d-sel" id="fontSel" onchange="applyFont(this.value)">
+        <optgroup label="Monospace">
+          <option value="'JetBrains Mono',monospace" selected>JetBrains Mono</option>
+          <option value="'Courier New',monospace">Courier New</option>
+          <option value="'Fira Code',monospace">Fira Code</option>
+          <option value="'Source Code Pro',monospace">Source Code Pro</option>
+          <option value="'Inconsolata',monospace">Inconsolata</option>
+          <option value="'IBM Plex Mono',monospace">IBM Plex Mono</option>
+          <option value="'Roboto Mono',monospace">Roboto Mono</option>
+          <option value="'Space Mono',monospace">Space Mono</option>
+          <option value="'Ubuntu Mono',monospace">Ubuntu Mono</option>
+          <option value="'Hack',monospace">Hack</option>
+        </optgroup>
+        <optgroup label="Sans-Serif">
+          <option value="'Inter',sans-serif">Inter</option>
+          <option value="'Poppins',sans-serif">Poppins</option>
+          <option value="'Nunito',sans-serif">Nunito</option>
+          <option value="'DM Sans',sans-serif">DM Sans</option>
+          <option value="'Outfit',sans-serif">Outfit</option>
+          <option value="'Raleway',sans-serif">Raleway</option>
+          <option value="'Rubik',sans-serif">Rubik</option>
+          <option value="'Manrope',sans-serif">Manrope</option>
+          <option value="'Josefin Sans',sans-serif">Josefin Sans</option>
+          <option value="'Barlow',sans-serif">Barlow</option>
+          <option value="'Mulish',sans-serif">Mulish</option>
+          <option value="'Work Sans',sans-serif">Work Sans</option>
+          <option value="'Lato',sans-serif">Lato</option>
+          <option value="'Open Sans',sans-serif">Open Sans</option>
+          <option value="'Montserrat',sans-serif">Montserrat</option>
+          <option value="'Oswald',sans-serif">Oswald</option>
+          <option value="'Quicksand',sans-serif">Quicksand</option>
+          <option value="'Heebo',sans-serif">Heebo</option>
+          <option value="'Titillium Web',sans-serif">Titillium Web</option>
+          <option value="'Jost',sans-serif">Jost</option>
+        </optgroup>
+        <optgroup label="Serif">
+          <option value="'Georgia',serif">Georgia</option>
+          <option value="'Merriweather',serif">Merriweather</option>
+          <option value="'Playfair Display',serif">Playfair Display</option>
+          <option value="'Lora',serif">Lora</option>
+          <option value="'Crimson Text',serif">Crimson Text</option>
+          <option value="'EB Garamond',serif">EB Garamond</option>
+          <option value="'Bitter',serif">Bitter</option>
+          <option value="'Vollkorn',serif">Vollkorn</option>
+          <option value="'Noto Serif',serif">Noto Serif</option>
+        </optgroup>
+        <optgroup label="Display">
+          <option value="'Bebas Neue',cursive">Bebas Neue</option>
+          <option value="'Righteous',cursive">Righteous</option>
+          <option value="'Pacifico',cursive">Pacifico</option>
+          <option value="'Dancing Script',cursive">Dancing Script</option>
+          <option value="'Lobster',cursive">Lobster</option>
+          <option value="'Caveat',cursive">Caveat</option>
+          <option value="'Amatic SC',cursive">Amatic SC</option>
+          <option value="'Bangers',cursive">Bangers</option>
+          <option value="'Comfortaa',cursive">Comfortaa</option>
+          <option value="'Kalam',cursive">Kalam</option>
+        </optgroup>
+        <optgroup label="Hindi / Devanagari">
+          <option value="'Noto Sans Devanagari',sans-serif">Noto Sans Devanagari</option>
+          <option value="'Hind',sans-serif">Hind</option>
+          <option value="'Baloo 2',cursive">Baloo 2</option>
+          <option value="'Mukta',sans-serif">Mukta</option>
+          <option value="'Tiro Devanagari Hindi',serif">Tiro Devanagari Hindi</option>
+        </optgroup>
+      </select>
+
+      <div class="sec-t">Font Size</div>
+      <select class="d-sel" id="sizeSel" onchange="applySize(this.value)">
+        <option value="11px">11px</option>
+        <option value="12px">12px</option>
+        <option value="13px" selected>13px</option>
+        <option value="14px">14px</option>
+        <option value="15px">15px</option>
+        <option value="16px">16px</option>
+        <option value="18px">18px</option>
+        <option value="20px">20px</option>
+        <option value="22px">22px</option>
+        <option value="24px">24px</option>
+      </select>
+
+      <div class="sec-t">Text Color</div>
+      <div class="color-row">
+        <div class="cswatch">
+          <div class="csp" id="swPrev"></div>
+          <input type="color" id="colorPick" value="#b0bcff" oninput="applyColor(this.value)">
+        </div>
+        <span class="clbl" id="colorLbl">#b0bcff</span>
+      </div>
+
+      <div class="sec-t">Actions</div>
+      <button class="d-btn d-success" onclick="closeDrawer();openFiles()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        My Files
+      </button>
+      <button class="d-btn d-ghost" onclick="closeDrawer();newFile()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        New File
+      </button>
+      <button class="d-btn d-ghost" onclick="closeDrawer();downloadFile()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download .html
+      </button>
+      <button class="d-btn d-teal" onclick="closeDrawer();openGuide()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        HTML Guide
+      </button>
+      <button class="d-btn d-danger" onclick="closeDrawer();clearCode()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        Clear All
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FILES MODAL -->
+<div class="mod-ov" id="filesOv" onclick="if(event.target===this)closeModal('filesOv')">
+  <div class="mod">
+    <div class="mod-t">📁 My Files
+      <button class="mod-close" onclick="closeModal('filesOv')">✕</button>
+    </div>
+    <div class="inp-row">
+      <input class="m-inp" type="text" id="saveInp" placeholder="filename.html">
+      <button class="m-btn" onclick="saveAs()">Save As</button>
+    </div>
+    <div class="flist" id="flist"><p class="empty">No saved files yet.</p></div>
+  </div>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="mod-ov" id="guideOv" onclick="if(event.target===this)closeModal('guideOv')">
+  <div class="mod" style="max-height:88vh">
+    <div class="mod-t">📖 HTML Guide
+      <button class="mod-close" onclick="closeModal('guideOv')">✕</button>
+    </div>
+    <div class="g-lang-row">
+      <button class="g-lang on" id="gl-en" onclick="setGL('en')">🇬🇧 English</button>
+      <button class="g-lang" id="gl-hi" onclick="setGL('hi')">🇮🇳 Hindi</button>
+    </div>
+    <div class="g-cats" id="gCats"></div>
+    <p class="g-hint">👆 Tap any tag to see what it does and insert it.</p>
+    <div class="g-lang-sec show" id="gs-en"></div>
+    <div class="g-lang-sec" id="gs-hi"></div>
+  </div>
+</div>
+
+<!-- GUIDE DATA stored safely as JSON (avoids </script> conflicts) -->
+<script type="application/json" id="guideDataJSON">
+{
+  "en": [
+    {
+      "cat": "text",
+      "label": "📝 Text & Headings",
+      "desc": "Use these tags to write text, titles and headings on your page.",
+      "tags": [
+        { "tag": "h1", "label": "H1 — Biggest Heading", "what": "The main title of your page. Use only once per page.", "example": "Like a newspaper headline — the most important title.", "snippet": "<h1>Welcome to My Website</h1>" },
+        { "tag": "h2", "label": "H2 — Section Title", "what": "A section heading. Use below h1.", "example": "Like a chapter name in a book.", "snippet": "<h2>About Me</h2>" },
+        { "tag": "h3", "label": "H3 — Sub Section", "what": "A smaller heading inside an h2 section.", "example": "Like a sub-topic inside a chapter.", "snippet": "<h3>My Skills</h3>" },
+        { "tag": "p", "label": "p — Paragraph", "what": "A block of regular text. Used for all normal writing.", "example": "Like a paragraph in an essay or article.", "snippet": "<p>This is a paragraph of text. You can write as much as you want here.</p>" },
+        { "tag": "strong", "label": "strong — Bold Text", "what": "Makes text bold and important.", "example": "Like highlighting important words in a book.", "snippet": "<p>This is <strong>very important</strong> information.</p>" },
+        { "tag": "em", "label": "em — Italic Text", "what": "Makes text italic (slanted). Used for emphasis.", "example": "Like italics in a book for titles or stress.", "snippet": "<p>The word <em>HTML</em> stands for HyperText Markup Language.</p>" },
+        { "tag": "u", "label": "u — Underline", "what": "Draws a line under the text.", "example": "Like underlining words in a notebook.", "snippet": "<p>Please read the <u>instructions</u> carefully.</p>" },
+        { "tag": "mark", "label": "mark — Highlight", "what": "Highlights text with a yellow/colored background.", "example": "Like using a yellow marker on paper.", "snippet": "<p>The answer is <mark>42</mark>.</p>" },
+        { "tag": "br", "label": "br — Line Break", "what": "Moves to the next line. No closing tag needed.", "example": "Like pressing Enter in a text message.", "snippet": "<p>Line one<br>Line two<br>Line three</p>" },
+        { "tag": "hr", "label": "hr — Horizontal Divider", "what": "Draws a horizontal divider line. No closing tag needed.", "example": "Like a divider between sections on a page.", "snippet": "<p>Section one content.</p>\n<hr style=\"border-color:#6c63ff\">\n<p>Section two content.</p>" },
+        { "tag": "span", "label": "span — Inline Wrapper", "what": "Wraps a part of text so you can style just that part.", "example": "Like putting a label on one word to change its color.", "snippet": "<p>The sky is <span style=\"color:skyblue;font-weight:bold\">blue</span> today.</p>" },
+        { "tag": "blockquote", "label": "blockquote — Quote Block", "what": "Shows a long quote, usually indented.", "example": "Like a quoted passage in an essay.", "snippet": "<blockquote style=\"border-left:4px solid #6c63ff;padding-left:16px;color:#7b849e\">\n  \"The best way to predict the future is to create it.\"\n  <br><strong>— Abraham Lincoln</strong>\n</blockquote>" },
+        { "tag": "small", "label": "small — Smaller Text", "what": "Makes text slightly smaller. Used for fine print.", "example": "Like the tiny text at the bottom of an advertisement.", "snippet": "<p>Price: &#x20B9;499 <small>(inclusive of all taxes)</small></p>" },
+        { "tag": "code", "label": "code — Code Text", "what": "Shows text in a fixed-width font, like code.", "example": "Used to display programming code inline.", "snippet": "<p>To print in Python, write <code>print(\"Hello\")</code></p>" }
+      ]
+    },
+    {
+      "cat": "lists",
+      "label": "📋 Lists",
+      "desc": "Lists let you show items in a neat, organized way.",
+      "tags": [
+        { "tag": "ul", "label": "ul — Bullet List", "what": "An unordered list shows items with bullet points.", "example": "Like a shopping list or a list of features.", "snippet": "<ul>\n  <li>Apples</li>\n  <li>Bananas</li>\n  <li>Oranges</li>\n</ul>" },
+        { "tag": "ol", "label": "ol — Numbered List", "what": "An ordered list shows items with numbers (1, 2, 3...).", "example": "Like steps in a recipe or instructions.", "snippet": "<ol>\n  <li>Open the file</li>\n  <li>Edit the code</li>\n  <li>Save and preview</li>\n</ol>" },
+        { "tag": "li", "label": "li — List Item", "what": "One item inside a list. Always goes inside ul or ol.", "example": "Each li is one bullet point or one numbered step.", "snippet": "<ul>\n  <li>First item</li>\n  <li>Second item</li>\n</ul>" },
+        { "tag": "ul-styled", "label": "Styled Bullet List", "what": "A list with custom colors and styling.", "example": "A good-looking feature list for a website.", "snippet": "<ul style=\"list-style:none;padding:0\">\n  <li style=\"padding:8px 0;border-bottom:1px solid #2d3450;color:#dde3f5\">&#x2705; Easy to use</li>\n  <li style=\"padding:8px 0;border-bottom:1px solid #2d3450;color:#dde3f5\">&#x2705; Mobile friendly</li>\n  <li style=\"padding:8px 0;color:#dde3f5\">&#x2705; Free forever</li>\n</ul>" },
+        { "tag": "nested-list", "label": "Nested List (List inside List)", "what": "A list that has another list inside one of its items.", "example": "Like a menu with sub-items.", "snippet": "<ul style=\"color:#dde3f5;line-height:1.8\">\n  <li>Fruits\n    <ul>\n      <li>Apple</li>\n      <li>Mango</li>\n    </ul>\n  </li>\n  <li>Vegetables\n    <ul>\n      <li>Potato</li>\n      <li>Tomato</li>\n    </ul>\n  </li>\n</ul>" }
+      ]
+    },
+    {
+      "cat": "layout",
+      "label": "📦 Page Layout",
+      "desc": "Layout tags help you organize your page into sections.",
+      "tags": [
+        { "tag": "div", "label": "div — Box / Container", "what": "The most common tag. Creates an invisible box to group things.", "example": "Like a cardboard box — put anything inside it.", "snippet": "<div style=\"background:#1d2333;padding:20px;border-radius:10px;border:1px solid #2d3450\">\n  <h2 style=\"color:#dde3f5\">Inside a div box</h2>\n  <p style=\"color:#7b849e\">Content goes here.</p>\n</div>" },
+        { "tag": "header", "label": "header — Page Top", "what": "The top area of a webpage. Usually has the logo and navigation.", "example": "Like the top bar of any website with the brand name.", "snippet": "<header style=\"background:#161b25;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2d3450\">\n  <h1 style=\"color:#6c63ff;font-size:1.3em\">MyWebsite</h1>\n  <nav>\n    <a href=\"#\" style=\"color:#dde3f5;text-decoration:none;margin-left:16px\">Home</a>\n    <a href=\"#\" style=\"color:#dde3f5;text-decoration:none;margin-left:16px\">About</a>\n  </nav>\n</header>" },
+        { "tag": "main", "label": "main — Main Content", "what": "The main body content area of the page.", "example": "The middle part of a newspaper — where the real content is.", "snippet": "<main style=\"padding:24px;max-width:800px;margin:0 auto\">\n  <h1 style=\"color:#dde3f5\">Welcome!</h1>\n  <p style=\"color:#7b849e;line-height:1.7\">This is the main content of the page.</p>\n</main>" },
+        { "tag": "footer", "label": "footer — Page Bottom", "what": "The bottom area of a webpage. Usually has copyright info.", "example": "Like the bottom of any website with links and copyright.", "snippet": "<footer style=\"background:#161b25;padding:20px;text-align:center;color:#7b849e;border-top:1px solid #2d3450;margin-top:40px\">\n  <p>&copy; 2024 MyWebsite. All rights reserved.</p>\n</footer>" },
+        { "tag": "nav", "label": "nav — Navigation Menu", "what": "A menu/navigation bar with links.", "example": "Like the top menu on any website with Home, About, Contact.", "snippet": "<nav style=\"background:#1d2333;padding:12px 20px;display:flex;gap:20px;align-items:center\">\n  <a href=\"#home\" style=\"color:#dde3f5;text-decoration:none;font-weight:500\">Home</a>\n  <a href=\"#about\" style=\"color:#dde3f5;text-decoration:none;font-weight:500\">About</a>\n  <a href=\"#contact\" style=\"color:#7b849e;text-decoration:none\">Contact</a>\n</nav>" },
+        { "tag": "section", "label": "section — Page Section", "what": "A meaningful section of the page.", "example": "Like a chapter — each section has its own topic.", "snippet": "<section style=\"padding:40px 20px;border-bottom:1px solid #2d3450\">\n  <h2 style=\"color:#dde3f5;margin-bottom:12px\">About Us</h2>\n  <p style=\"color:#7b849e;line-height:1.7\">We are a team of passionate developers.</p>\n</section>" },
+        { "tag": "flexbox", "label": "Flexbox — Side by Side Layout", "what": "Puts boxes side-by-side in a row. Great for cards and columns.", "example": "Like shelves in a store — items sit next to each other.", "snippet": "<div style=\"display:flex;gap:16px;flex-wrap:wrap\">\n  <div style=\"flex:1;min-width:120px;background:#6c63ff;color:white;padding:20px;border-radius:10px;text-align:center\">Box 1</div>\n  <div style=\"flex:1;min-width:120px;background:#ff6b9d;color:white;padding:20px;border-radius:10px;text-align:center\">Box 2</div>\n  <div style=\"flex:1;min-width:120px;background:#4ecdc4;color:#0a2a1e;padding:20px;border-radius:10px;text-align:center\">Box 3</div>\n</div>" },
+        { "tag": "card", "label": "Card Component", "what": "A styled box that shows one piece of content.", "example": "Like a visiting card or product card in a shopping app.", "snippet": "<div style=\"background:#161b25;border:1px solid #2d3450;border-radius:14px;padding:24px;max-width:300px;box-shadow:0 8px 24px rgba(0,0,0,.3)\">\n  <div style=\"font-size:2.5em;margin-bottom:12px\">&#x1F3A8;</div>\n  <h3 style=\"color:#dde3f5;margin-bottom:8px\">Design Skills</h3>\n  <p style=\"color:#7b849e;line-height:1.6;margin-bottom:16px\">Creating beautiful interfaces with modern tools.</p>\n  <button style=\"padding:9px 18px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer\">Learn More</button>\n</div>" },
+        { "tag": "hero", "label": "Hero Section (Big Welcome)", "what": "The big eye-catching section at the top of a homepage.", "example": "Like the first screen you see when you open a website.", "snippet": "<section style=\"min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);text-align:center;color:white;padding:24px\">\n  <div>\n    <h1 style=\"font-size:2.8em;margin-bottom:14px\">Welcome to My Site &#x1F44B;</h1>\n    <p style=\"opacity:.8;font-size:1.15em;margin-bottom:28px;max-width:480px;line-height:1.6\">I build websites, apps, and cool things for the web.</p>\n    <button style=\"padding:14px 32px;background:#6c63ff;color:white;border:none;border-radius:30px;font-size:1em;cursor:pointer;margin-right:10px\">View Work</button>\n    <button style=\"padding:14px 32px;background:transparent;color:white;border:2px solid white;border-radius:30px;font-size:1em;cursor:pointer\">Contact Me</button>\n  </div>\n</section>" }
+      ]
+    },
+    {
+      "cat": "tables",
+      "label": "📊 Tables",
+      "desc": "Tables display data in rows and columns — like a spreadsheet.",
+      "tags": [
+        { "tag": "table", "label": "table — Simple Table", "what": "Shows data in rows and columns. Like a spreadsheet on a webpage.", "example": "Like a class attendance list or a price table.", "snippet": "<table style=\"border-collapse:collapse;width:100%;font-family:Arial\">\n  <thead>\n    <tr style=\"background:#6c63ff;color:white\">\n      <th style=\"padding:12px 16px;text-align:left\">Name</th>\n      <th style=\"padding:12px 16px;text-align:left\">Subject</th>\n      <th style=\"padding:12px 16px;text-align:left\">Score</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr style=\"background:#1d2333;color:#dde3f5\">\n      <td style=\"padding:10px 16px;border-bottom:1px solid #2d3450\">Ravi</td>\n      <td style=\"padding:10px 16px;border-bottom:1px solid #2d3450\">Math</td>\n      <td style=\"padding:10px 16px;border-bottom:1px solid #2d3450\">95</td>\n    </tr>\n    <tr style=\"background:#161b25;color:#dde3f5\">\n      <td style=\"padding:10px 16px\">Priya</td>\n      <td style=\"padding:10px 16px\">Science</td>\n      <td style=\"padding:10px 16px\">88</td>\n    </tr>\n  </tbody>\n</table>" },
+        { "tag": "tr", "label": "tr — Table Row", "what": "One horizontal row in a table.", "example": "Like one line in a register or spreadsheet.", "snippet": "<tr>\n  <td style=\"padding:10px\">Row data 1</td>\n  <td style=\"padding:10px\">Row data 2</td>\n</tr>" },
+        { "tag": "td", "label": "td — Table Cell (Data)", "what": "One cell inside a table row. Holds the actual data.", "example": "Like one box in a spreadsheet grid.", "snippet": "<td style=\"padding:10px;border:1px solid #2d3450;color:#dde3f5\">Cell content</td>" },
+        { "tag": "th", "label": "th — Table Header Cell", "what": "A header cell. Bold by default. Used for column titles.", "example": "Like the bold column headers in a spreadsheet.", "snippet": "<th style=\"padding:10px;background:#252c3d;color:#dde3f5;text-align:left\">Column Name</th>" }
+      ]
+    },
+    {
+      "cat": "forms",
+      "label": "📝 Forms & Inputs",
+      "desc": "Forms let users type and submit information — like login, signup, or contact.",
+      "tags": [
+        { "tag": "form", "label": "form — Form Container", "what": "Wraps all the input fields together. Like a paper form.", "example": "Like a sign-up or contact form on any website.", "snippet": "<form style=\"max-width:360px;padding:20px;background:#161b25;border:1px solid #2d3450;border-radius:12px\">\n  <h3 style=\"color:#dde3f5;margin-bottom:16px\">My Form</h3>\n  <!-- inputs go here -->\n  <button style=\"padding:10px 20px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer\">Submit</button>\n</form>" },
+        { "tag": "input-text", "label": "input — Text Box", "what": "A box where users can type text.", "example": "Like the search box on Google.", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Your Name</label>\n  <input type=\"text\" placeholder=\"Enter your name\" style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n</div>" },
+        { "tag": "input-email", "label": "input — Email Box", "what": "A text box that only accepts valid email addresses.", "example": "Like the email field in any sign-up form.", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Email Address</label>\n  <input type=\"email\" placeholder=\"you@email.com\" style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n</div>" },
+        { "tag": "input-password", "label": "input — Password Box", "what": "A text box that hides what you type (shows dots).", "example": "Like the password field in any login form.", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Password</label>\n  <input type=\"password\" placeholder=\"Enter password\" style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n</div>" },
+        { "tag": "textarea", "label": "textarea — Big Text Box", "what": "A larger text area where users can type multiple lines.", "example": "Like the message box in a contact form.", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Your Message</label>\n  <textarea rows=\"5\" placeholder=\"Write your message here...\" style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;resize:vertical;outline:none;box-sizing:border-box\"></textarea>\n</div>" },
+        { "tag": "button", "label": "button — Clickable Button", "what": "A button users can click to do something.", "example": "Like a Submit or Buy Now button on a website.", "snippet": "<div style=\"display:flex;gap:10px;flex-wrap:wrap\">\n  <button style=\"padding:11px 22px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1em\">Submit</button>\n  <button style=\"padding:11px 22px;background:transparent;color:#6c63ff;border:2px solid #6c63ff;border-radius:8px;cursor:pointer;font-size:1em\">Cancel</button>\n  <button style=\"padding:11px 22px;background:#ff4757;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1em\">Delete</button>\n</div>" },
+        { "tag": "select", "label": "select — Dropdown Menu", "what": "A dropdown list where users pick one option.", "example": "Like selecting your state or city in a registration form.", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Choose Your City</label>\n  <select style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none\">\n    <option value=\"\">Select city...</option>\n    <option value=\"delhi\">New Delhi</option>\n    <option value=\"mumbai\">Mumbai</option>\n    <option value=\"bangalore\">Bengaluru</option>\n  </select>\n</div>" },
+        { "tag": "checkbox", "label": "input — Checkbox (Tick Box)", "what": "A small box users can tick or untick.", "example": "Like the I agree to Terms checkbox on sign-up.", "snippet": "<div style=\"display:flex;flex-direction:column;gap:10px\">\n  <label style=\"display:flex;align-items:center;gap:10px;cursor:pointer;color:#dde3f5\">\n    <input type=\"checkbox\" checked> I agree to the Terms and Conditions\n  </label>\n  <label style=\"display:flex;align-items:center;gap:10px;cursor:pointer;color:#dde3f5\">\n    <input type=\"checkbox\"> Send me newsletters\n  </label>\n</div>" },
+        { "tag": "radio", "label": "input — Radio Buttons (One Choice)", "what": "Radio buttons let users pick only ONE option from a group.", "example": "Like choosing your gender — Male, Female, or Other.", "snippet": "<div style=\"color:#dde3f5\">\n  <p style=\"color:#7b849e;font-size:.85em;margin-bottom:8px\">Select your plan:</p>\n  <label style=\"display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:8px\">\n    <input type=\"radio\" name=\"plan\" value=\"free\"> Free\n  </label>\n  <label style=\"display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:8px\">\n    <input type=\"radio\" name=\"plan\" value=\"pro\" checked> Pro\n  </label>\n  <label style=\"display:flex;align-items:center;gap:10px;cursor:pointer\">\n    <input type=\"radio\" name=\"plan\" value=\"premium\"> Premium\n  </label>\n</div>" },
+        { "tag": "login-form", "label": "Login Form (Full)", "what": "A complete login form with email and password inputs.", "example": "Like the sign-in screen of any app.", "snippet": "<form style=\"max-width:360px;margin:20px auto;padding:28px;background:#161b25;border:1px solid #2d3450;border-radius:14px\">\n  <h2 style=\"color:#dde3f5;margin-bottom:6px;text-align:center\">Login</h2>\n  <p style=\"color:#7b849e;text-align:center;font-size:.9em;margin-bottom:20px\">Welcome back!</p>\n  <div style=\"margin-bottom:14px\">\n    <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Email</label>\n    <input type=\"email\" placeholder=\"you@email.com\" style=\"width:100%;padding:11px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n  </div>\n  <div style=\"margin-bottom:22px\">\n    <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Password</label>\n    <input type=\"password\" placeholder=\"Password\" style=\"width:100%;padding:11px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n  </div>\n  <button type=\"submit\" style=\"width:100%;padding:13px;background:#6c63ff;color:white;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-weight:600\">Sign In</button>\n</form>" }
+      ]
+    },
+    {
+      "cat": "style",
+      "label": "🎨 CSS Styling",
+      "desc": "CSS makes your page look beautiful — colors, fonts, spacing, and animations.",
+      "tags": [
+        { "tag": "style", "label": "style — CSS Block", "what": "A place to write all your CSS styling rules.", "example": "Like a design instruction sheet for your webpage.", "snippet": "<style>\n  body {\n    font-family: Arial, sans-serif;\n    background: #0e1117;\n    color: #dde3f5;\n    margin: 0;\n    padding: 20px;\n  }\n  h1 { color: #6c63ff; font-size: 2em; }\n  p  { line-height: 1.7; opacity: 0.85; }\n</style>\n<h1>Styled Heading</h1>\n<p>This paragraph has nice spacing and color.</p>" },
+        { "tag": "inline-style", "label": "Inline Style (One tag)", "what": "Add style directly to one HTML tag using the style= attribute.", "example": "Like coloring just one word instead of all text.", "snippet": "<p style=\"color:#ff6b9d;font-size:1.3em;font-weight:bold\">Pink bold text</p>\n<p style=\"background:#1d2333;padding:12px;border-radius:8px;border-left:4px solid #6c63ff\">Styled paragraph with a blue left border.</p>" },
+        { "tag": "css-colors", "label": "Colors and Backgrounds", "what": "Control the color of text and backgrounds.", "example": "Like choosing paint colors for a room.", "snippet": "<div style=\"padding:16px;display:flex;flex-direction:column;gap:10px\">\n  <div style=\"background:#6c63ff;color:white;padding:12px;border-radius:8px\">Purple background</div>\n  <div style=\"background:#ff6b9d;color:white;padding:12px;border-radius:8px\">Pink background</div>\n  <div style=\"background:#4ecdc4;color:#0a2a1e;padding:12px;border-radius:8px\">Teal background</div>\n  <div style=\"background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px;border-radius:8px\">Gradient background</div>\n</div>" },
+        { "tag": "css-hover", "label": "Hover Effect (Mouse Over)", "what": "Change how something looks when the mouse moves over it.", "example": "Like a button that changes color when you touch it.", "snippet": "<style>\n  .hover-btn {\n    padding: 12px 24px;\n    background: #6c63ff;\n    color: white;\n    border: none;\n    border-radius: 8px;\n    cursor: pointer;\n    font-size: 1em;\n    transition: all 0.3s ease;\n  }\n  .hover-btn:hover {\n    background: #ff6b9d;\n    transform: scale(1.05);\n    box-shadow: 0 8px 20px rgba(255,107,157,0.4);\n  }\n</style>\n<button class=\"hover-btn\">Hover over me!</button>" },
+        { "tag": "css-animation", "label": "Animation (Moving Elements)", "what": "Make elements move, fade, or bounce with CSS animations.", "example": "Like a loading spinner or a blinking notification.", "snippet": "<style>\n  @keyframes fadeSlideIn {\n    from { opacity: 0; transform: translateY(20px); }\n    to   { opacity: 1; transform: translateY(0); }\n  }\n  @keyframes pulse {\n    0%, 100% { transform: scale(1); }\n    50%       { transform: scale(1.08); }\n  }\n  .fade-in { animation: fadeSlideIn 0.7s ease forwards; }\n  .pulsing  { animation: pulse 2s ease infinite; }\n</style>\n<div class=\"fade-in\" style=\"background:#1d2333;border:1px solid #2d3450;border-radius:12px;padding:20px;text-align:center;color:#dde3f5\">\n  <span class=\"pulsing\" style=\"font-size:2em;display:inline-block\">&#x2728;</span>\n  <p style=\"margin-top:10px\">This box fades in, the star pulses!</p>\n</div>" }
+      ]
+    },
+    {
+      "cat": "js",
+      "label": "⚡ JavaScript Basics",
+      "desc": "JavaScript adds actions to your page — clicking, counting, showing messages.",
+      "tags": [
+        { "tag": "script", "label": "script — JS Code Block", "what": "A block where you write JavaScript. Put it at the bottom of your HTML.", "example": "Like a set of instructions the browser follows.", "snippet": "<p id=\"msg\" style=\"color:#4ecdc4;font-size:1.1em;font-family:Arial\">Click the button!</p>\n<button onclick=\"document.getElementById('msg').textContent='Hello! 🎉'\" style=\"padding:12px 24px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1em\">Click Me</button>" },
+        { "tag": "onclick-counter", "label": "onclick — Click Counter", "what": "Do something when a button is clicked. Count goes up each time.", "example": "Like counting how many times you tap something.", "snippet": "<div style=\"text-align:center;padding:24px;background:#1d2333;border-radius:12px;max-width:260px;margin:0 auto\">\n  <p style=\"color:#7b849e;margin-bottom:10px\">Times clicked:</p>\n  <h1 id=\"cnt\" style=\"color:#6c63ff;font-size:4em;margin:0\">0</h1>\n  <div style=\"display:flex;gap:10px;margin-top:20px;justify-content:center\">\n    <button onclick=\"document.getElementById('cnt').textContent=parseInt(document.getElementById('cnt').textContent)+1\" style=\"padding:12px 20px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.2em\">+</button>\n    <button onclick=\"document.getElementById('cnt').textContent=0\" style=\"padding:12px 20px;background:#ff4757;color:white;border:none;border-radius:8px;cursor:pointer;font-size:.9em\">Reset</button>\n  </div>\n</div>" },
+        { "tag": "showhide", "label": "Show / Hide Content", "what": "Click a button to show or hide a section of content.", "example": "Like FAQ accordion — click question to reveal answer.", "snippet": "<div style=\"max-width:360px\">\n  <button onclick=\"var a=document.getElementById('ans');var ar=document.getElementById('arr');if(a.style.display==='none'){a.style.display='block';ar.textContent='&#x25B2;'}else{a.style.display='none';ar.textContent='&#x25BC;'}\" style=\"width:100%;padding:14px;background:#1d2333;color:#dde3f5;border:1px solid #2d3450;border-radius:10px;cursor:pointer;font-size:1em;display:flex;justify-content:space-between;align-items:center\">\n    <span>What is HTML?</span><span id=\"arr\">&#x25BC;</span>\n  </button>\n  <div id=\"ans\" style=\"display:none;background:#0e1117;border:1px solid #2d3450;border-top:none;border-radius:0 0 10px 10px;padding:16px;color:#7b849e;line-height:1.6\">\n    HTML stands for HyperText Markup Language. It is the standard language for creating websites!\n  </div>\n</div>" },
+        { "tag": "darkmode", "label": "Dark / Light Mode Toggle", "what": "A button that switches between dark and light theme.", "example": "Like the dark mode button in WhatsApp or YouTube.", "snippet": "<button id=\"themeBtn\" onclick=\"var d=document.body;var b=document.getElementById('themeBtn');if(d.style.background==='#ffffff'){d.style.background='#0e1117';d.style.color='#dde3f5';b.textContent='Switch to Light Mode'}else{d.style.background='#ffffff';d.style.color='#1a1a2e';b.textContent='Switch to Dark Mode'}\" style=\"padding:10px 20px;background:#252c3d;color:#dde3f5;border:1px solid #2d3450;border-radius:8px;cursor:pointer;font-size:1em\">Switch to Light Mode</button>\n<p id=\"themeMsg\" style=\"margin-top:16px;color:#7b849e\">Currently: Dark Mode</p>" },
+        { "tag": "alert-confirm", "label": "Alert and Confirm Popups", "what": "Show a message box or ask the user to confirm something.", "example": "Like 'Are you sure you want to delete?' popup in apps.", "snippet": "<div style=\"display:flex;gap:10px;flex-wrap:wrap\">\n  <button onclick=\"alert('Hello! This is an alert box.')\" style=\"padding:10px 16px;background:#6c63ff;color:white;border:none;border-radius:7px;cursor:pointer\">Show Alert</button>\n  <button onclick=\"var r=confirm('Do you want to continue?');document.getElementById('resp').textContent=r?'You clicked OK!':'You clicked Cancel.'\" style=\"padding:10px 16px;background:#ff6b9d;color:white;border:none;border-radius:7px;cursor:pointer\">Ask Confirm</button>\n</div>\n<p id=\"resp\" style=\"margin-top:12px;color:#4ecdc4\"></p>" }
+      ]
+    },
+    {
+      "cat": "templates",
+      "label": "🏠 Page Templates",
+      "desc": "Ready-made full HTML pages. Insert and customize to get started fast.",
+      "tags": [
+        { "tag": "full-html", "label": "Full HTML Starter Page", "what": "A complete HTML page structure with all required parts.", "example": "The empty skeleton every webpage starts with.", "snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>My Webpage</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      font-family: Arial, sans-serif;\n      background: #0e1117;\n      color: #dde3f5;\n    }\n  </style>\n</head>\n<body>\n\n  <h1>Hello, World!</h1>\n  <p>This is my first webpage.</p>\n\n</body>\n</html>" },
+        { "tag": "portfolio", "label": "Portfolio Homepage", "what": "A personal portfolio page template.", "example": "Like a personal website showing who you are and what you do.", "snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>My Portfolio</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { font-family: Arial, sans-serif; background: #0e1117; color: #dde3f5; }\n    nav { background: #161b25; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }\n    nav .logo { color: #6c63ff; font-weight: 700; }\n    nav a { color: #dde3f5; text-decoration: none; margin-left: 16px; }\n    .hero { min-height: 90vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: linear-gradient(135deg, #1a1a2e, #16213e); }\n    .hero h1 { font-size: 2.5em; margin-bottom: 12px; }\n    .hero h1 span { color: #6c63ff; }\n    .hero p { color: #7b849e; max-width: 480px; line-height: 1.7; margin-bottom: 24px; }\n    .btn { padding: 12px 28px; background: #6c63ff; color: white; border: none; border-radius: 30px; cursor: pointer; margin: 4px; }\n    footer { background: #161b25; padding: 20px; text-align: center; color: #7b849e; font-size: .9em; }\n  </style>\n</head>\n<body>\n  <nav>\n    <div class=\"logo\">YourName</div>\n    <div><a href=\"#\">Skills</a><a href=\"#\">Contact</a></div>\n  </nav>\n  <section class=\"hero\">\n    <div>\n      <h1>Hi, I am <span>Your Name</span></h1>\n      <p>I build websites and love learning new things. Welcome to my portfolio!</p>\n      <button class=\"btn\">View My Work</button>\n    </div>\n  </section>\n  <footer>&copy; 2024 Your Name. All rights reserved.</footer>\n</body>\n</html>" },
+        { "tag": "landing", "label": "Product Landing Page", "what": "A page to promote a product or service.", "example": "Like the homepage of any app or product.", "snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>MyApp</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { font-family: Arial, sans-serif; background: #0e1117; color: #dde3f5; }\n    .hero { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); padding: 80px 24px; text-align: center; }\n    .hero h1 { font-size: 2.5em; margin-bottom: 14px; }\n    .hero p { color: #7b849e; max-width: 480px; margin: 0 auto 28px; line-height: 1.7; }\n    .btn { padding: 14px 32px; background: #6c63ff; color: white; border: none; border-radius: 30px; font-size: 1em; cursor: pointer; }\n    .features { padding: 60px 24px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }\n    .feature { background: #161b25; border: 1px solid #2d3450; border-radius: 14px; padding: 28px; max-width: 240px; flex: 1; min-width: 180px; }\n    .feature .icon { font-size: 2em; margin-bottom: 12px; }\n    .feature h3 { margin-bottom: 8px; }\n    .feature p { color: #7b849e; line-height: 1.6; font-size: .95em; }\n    footer { background: #161b25; padding: 20px; text-align: center; color: #7b849e; font-size: .9em; }\n  </style>\n</head>\n<body>\n  <div class=\"hero\">\n    <h1>MyApp</h1>\n    <p>The smartest way to manage your work. Simple, fast, and powerful.</p>\n    <button class=\"btn\">Get Started Free</button>\n  </div>\n  <div class=\"features\">\n    <div class=\"feature\"><div class=\"icon\">&#x26A1;</div><h3>Super Fast</h3><p>Built for speed. Your data loads instantly.</p></div>\n    <div class=\"feature\"><div class=\"icon\">&#x1F512;</div><h3>Secure</h3><p>Bank-level security keeps your data safe.</p></div>\n    <div class=\"feature\"><div class=\"icon\">&#x1F4F1;</div><h3>Mobile Ready</h3><p>Works perfectly on any screen size.</p></div>\n  </div>\n  <footer>&copy; 2024 MyApp. All rights reserved.</footer>\n</body>\n</html>" }
+      ]
+    }
+  ],
+  "hi": [
+    {
+      "cat": "text",
+      "label": "📝 Text और Headings",
+      "desc": "इन tags से आप अपने page पर text, title और headings लिख सकते हैं।",
+      "tags": [
+        { "tag": "h1", "label": "H1 — सबसे बड़ा शीर्षक", "what": "Page का main title। पूरे page पर सिर्फ एक बार use करें।", "example": "जैसे अखबार की सबसे बड़ी headline।", "snippet": "<h1>मेरी वेबसाइट में आपका स्वागत है</h1>" },
+        { "tag": "h2", "label": "H2 — Section शीर्षक", "what": "किसी section का heading। h1 के नीचे use होता है।", "example": "जैसे किसी किताब के chapter का नाम।", "snippet": "<h2>मेरे बारे में</h2>" },
+        { "tag": "h3", "label": "H3 — Sub-Section", "what": "h2 के अंदर छोटा heading।", "example": "जैसे chapter के अंदर एक topic।", "snippet": "<h3>मेरी skills</h3>" },
+        { "tag": "p", "label": "p — Paragraph (अनुच्छेद)", "what": "Normal text लिखने के लिए। हर paragraph के लिए एक p tag।", "example": "जैसे किसी लेख या निबंध का एक paragraph।", "snippet": "<p>यह एक paragraph है। यहाँ आप जितना चाहें उतना text लिख सकते हैं।</p>" },
+        { "tag": "strong", "label": "strong — मोटा (Bold) Text", "what": "Text को bold/मोटा बनाता है। Important words के लिए।", "example": "जैसे किताब में important शब्द को highlight करना।", "snippet": "<p>यह <strong>बहुत जरूरी</strong> जानकारी है।</p>" },
+        { "tag": "em", "label": "em — तिरछा (Italic) Text", "what": "Text को italic/तिरछा बनाता है।", "example": "जैसे किताब में किसी शब्द पर जोर देना।", "snippet": "<p>इसे <em>HTML</em> कहते हैं।</p>" },
+        { "tag": "u", "label": "u — रेखांकित (Underline)", "what": "Text के नीचे line खींचता है।", "example": "जैसे notebook में किसी word को underline करना।", "snippet": "<p>कृपया <u>निर्देशों</u> को ध्यान से पढ़ें।</p>" },
+        { "tag": "mark", "label": "mark — Highlight", "what": "Text को highlight करता है।", "example": "जैसे yellow marker से paper पर highlight करना।", "snippet": "<p>उत्तर है <mark>42</mark>।</p>" },
+        { "tag": "br", "label": "br — नई Line", "what": "Text को अगली line पर ले जाता है। कोई closing tag नहीं।", "example": "जैसे message में Enter दबाना।", "snippet": "<p>पहली पंक्ति<br>दूसरी पंक्ति<br>तीसरी पंक्ति</p>" },
+        { "tag": "span", "label": "span — एक हिस्से को Style करें", "what": "Text के एक छोटे हिस्से को अलग style देने के लिए।", "example": "जैसे सिर्फ एक word का रंग बदलना।", "snippet": "<p>आकाश <span style=\"color:skyblue;font-weight:bold\">नीला</span> है।</p>" },
+        { "tag": "blockquote", "label": "blockquote — Quote", "what": "किसी का कहा हुआ quote दिखाने के लिए।", "example": "जैसे किसी महान व्यक्ति का कथन।", "snippet": "<blockquote style=\"border-left:4px solid #6c63ff;padding-left:16px;color:#7b849e\">\n  \"जो बीत गई सो बात गई।\"\n</blockquote>" }
+      ]
+    },
+    {
+      "cat": "lists",
+      "label": "📋 Lists (सूचियाँ)",
+      "desc": "Lists से आप चीजों को organized तरीके से दिखा सकते हैं।",
+      "tags": [
+        { "tag": "ul", "label": "ul — Bullet List (बिन्दु सूची)", "what": "Bullet points वाली list। Order matter नहीं करता।", "example": "जैसे shopping list या features की list।", "snippet": "<ul>\n  <li>आम</li>\n  <li>केला</li>\n  <li>संतरा</li>\n</ul>" },
+        { "tag": "ol", "label": "ol — Numbered List (क्रम सूची)", "what": "Numbers (1, 2, 3...) वाली list। Order matter करता है।", "example": "जैसे recipe के steps या instructions।", "snippet": "<ol>\n  <li>file खोलें</li>\n  <li>code लिखें</li>\n  <li>save करें और preview देखें</li>\n</ol>" },
+        { "tag": "li", "label": "li — List Item (एक item)", "what": "list का एक item। ul या ol के अंदर use होता है।", "example": "हर li एक bullet point या एक number है।", "snippet": "<ul>\n  <li>पहला item</li>\n  <li>दूसरा item</li>\n</ul>" }
+      ]
+    },
+    {
+      "cat": "layout",
+      "label": "📦 Page Layout (डिज़ाइन)",
+      "desc": "इन tags से page को sections में organize करें।",
+      "tags": [
+        { "tag": "div", "label": "div — Box/Container", "what": "सबसे common tag। एक invisible box बनाता है।", "example": "जैसे एक cardboard box — इसमें कुछ भी रखो।", "snippet": "<div style=\"background:#1d2333;padding:20px;border-radius:10px;border:1px solid #2d3450\">\n  <h2 style=\"color:#dde3f5\">div के अंदर</h2>\n  <p style=\"color:#7b849e\">यहाँ content लिखें।</p>\n</div>" },
+        { "tag": "header", "label": "header — Page का ऊपरी भाग", "what": "Website का top area। Logo और navigation यहाँ होता है।", "example": "जैसे किसी भी website का top bar।", "snippet": "<header style=\"background:#161b25;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2d3450\">\n  <h1 style=\"color:#6c63ff;font-size:1.3em\">मेरी वेबसाइट</h1>\n  <nav>\n    <a href=\"#\" style=\"color:#dde3f5;text-decoration:none;margin-left:16px\">होम</a>\n    <a href=\"#\" style=\"color:#dde3f5;text-decoration:none;margin-left:16px\">परिचय</a>\n  </nav>\n</header>" },
+        { "tag": "footer", "label": "footer — Page का निचला भाग", "what": "Website का bottom area। Copyright और links यहाँ होते हैं।", "example": "जैसे किसी भी website का सबसे नीचे वाला हिस्सा।", "snippet": "<footer style=\"background:#161b25;padding:20px;text-align:center;color:#7b849e;border-top:1px solid #2d3450\">\n  <p>&copy; 2024 मेरी वेबसाइट। सर्वाधिकार सुरक्षित।</p>\n</footer>" },
+        { "tag": "flexbox", "label": "Flexbox — Side by Side Layout", "what": "Boxes को एक साथ side-by-side रखता है।", "example": "जैसे दुकान की shelf पर items side-by-side रखना।", "snippet": "<div style=\"display:flex;gap:16px;flex-wrap:wrap\">\n  <div style=\"flex:1;min-width:120px;background:#6c63ff;color:white;padding:20px;border-radius:10px;text-align:center\">बॉक्स 1</div>\n  <div style=\"flex:1;min-width:120px;background:#ff6b9d;color:white;padding:20px;border-radius:10px;text-align:center\">बॉक्स 2</div>\n  <div style=\"flex:1;min-width:120px;background:#4ecdc4;color:#0a2a1e;padding:20px;border-radius:10px;text-align:center\">बॉक्स 3</div>\n</div>" },
+        { "tag": "hero", "label": "Hero Section (Welcome Screen)", "what": "Homepage का बड़ा welcome area।", "example": "जैसे website खोलने पर सबसे पहले दिखने वाला screen।", "snippet": "<section style=\"min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);text-align:center;color:white;padding:24px\">\n  <div>\n    <h1 style=\"font-size:2.5em;margin-bottom:14px\">मेरी वेबसाइट में स्वागत है</h1>\n    <p style=\"opacity:.8;margin-bottom:24px\">यहाँ अपना tagline लिखें</p>\n    <button style=\"padding:14px 32px;background:#6c63ff;color:white;border:none;border-radius:30px;font-size:1em;cursor:pointer\">शुरू करें</button>\n  </div>\n</section>" }
+      ]
+    },
+    {
+      "cat": "tables",
+      "label": "📊 Tables (तालिकाएँ)",
+      "desc": "Tables से data को rows और columns में दिखाएँ।",
+      "tags": [
+        { "tag": "table", "label": "table — Basic Table", "what": "Data को rows और columns में दिखाता है। जैसे spreadsheet।", "example": "जैसे class की attendance list या price table।", "snippet": "<table style=\"border-collapse:collapse;width:100%\">\n  <thead>\n    <tr style=\"background:#6c63ff;color:white\">\n      <th style=\"padding:12px 16px;text-align:left\">नाम</th>\n      <th style=\"padding:12px 16px;text-align:left\">विषय</th>\n      <th style=\"padding:12px 16px;text-align:left\">अंक</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr style=\"background:#1d2333;color:#dde3f5\">\n      <td style=\"padding:10px 16px;border-bottom:1px solid #2d3450\">राम</td>\n      <td style=\"padding:10px 16px;border-bottom:1px solid #2d3450\">गणित</td>\n      <td style=\"padding:10px 16px;border-bottom:1px solid #2d3450\">95</td>\n    </tr>\n    <tr style=\"background:#161b25;color:#dde3f5\">\n      <td style=\"padding:10px 16px\">सीता</td>\n      <td style=\"padding:10px 16px\">विज्ञान</td>\n      <td style=\"padding:10px 16px\">88</td>\n    </tr>\n  </tbody>\n</table>" },
+        { "tag": "tr", "label": "tr — Row (पंक्ति)", "what": "Table की एक horizontal row।", "example": "जैसे register में एक line।", "snippet": "<tr>\n  <td style=\"padding:10px\">पंक्ति data 1</td>\n  <td style=\"padding:10px\">पंक्ति data 2</td>\n</tr>" },
+        { "tag": "td", "label": "td — Cell (एक खाना)", "what": "Table का एक cell। इसमें actual data होता है।", "example": "जैसे spreadsheet का एक box।", "snippet": "<td style=\"padding:10px;border:1px solid #2d3450;color:#dde3f5\">Cell content</td>" },
+        { "tag": "th", "label": "th — Header Cell (शीर्षक)", "what": "Column का title। Bold होता है।", "example": "जैसे spreadsheet के column headers।", "snippet": "<th style=\"padding:10px;background:#252c3d;color:#dde3f5;text-align:left\">Column नाम</th>" }
+      ]
+    },
+    {
+      "cat": "forms",
+      "label": "📝 Forms (फ़ॉर्म)",
+      "desc": "Forms से user information भर सकते हैं जैसे login, signup, contact।",
+      "tags": [
+        { "tag": "input-text", "label": "input — Text Box", "what": "User को text type करने देता है।", "example": "जैसे Google का search box।", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">आपका नाम</label>\n  <input type=\"text\" placeholder=\"नाम लिखें\" style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n</div>" },
+        { "tag": "button", "label": "button — बटन", "what": "Click करने वाला button।", "example": "जैसे Submit या Buy Now button।", "snippet": "<div style=\"display:flex;gap:10px;flex-wrap:wrap\">\n  <button style=\"padding:11px 22px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1em\">Submit करें</button>\n  <button style=\"padding:11px 22px;background:#ff4757;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1em\">Delete</button>\n</div>" },
+        { "tag": "select", "label": "select — Dropdown Menu", "what": "एक dropdown जहाँ user एक option चुनता है।", "example": "जैसे form में state या city चुनना।", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">अपना शहर चुनें</label>\n  <select style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none\">\n    <option value=\"\">शहर चुनें...</option>\n    <option>नई दिल्ली</option>\n    <option>मुंबई</option>\n    <option>बेंगलुरु</option>\n  </select>\n</div>" },
+        { "tag": "textarea", "label": "textarea — बड़ा Text Box", "what": "Multiple lines का text लिखने के लिए।", "example": "जैसे contact form में message लिखना।", "snippet": "<div style=\"margin-bottom:12px\">\n  <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">आपका संदेश</label>\n  <textarea rows=\"5\" placeholder=\"अपना संदेश लिखें...\" style=\"width:100%;padding:10px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;resize:vertical;outline:none;box-sizing:border-box\"></textarea>\n</div>" },
+        { "tag": "checkbox", "label": "checkbox — Tick Box", "what": "Tick/untick करने वाला small box।", "example": "जैसे I agree का checkbox।", "snippet": "<label style=\"display:flex;align-items:center;gap:10px;cursor:pointer;color:#dde3f5\">\n  <input type=\"checkbox\" checked> मैं terms और conditions से सहमत हूँ\n</label>" },
+        { "tag": "login-form", "label": "Login Form", "what": "Email और password से login करने का form।", "example": "जैसे किसी भी app का sign-in screen।", "snippet": "<form style=\"max-width:360px;margin:20px auto;padding:28px;background:#161b25;border:1px solid #2d3450;border-radius:14px\">\n  <h2 style=\"color:#dde3f5;margin-bottom:20px;text-align:center\">Login</h2>\n  <div style=\"margin-bottom:14px\">\n    <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">ईमेल</label>\n    <input type=\"email\" placeholder=\"aap@email.com\" style=\"width:100%;padding:11px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n  </div>\n  <div style=\"margin-bottom:22px\">\n    <label style=\"color:#7b849e;font-size:.85em;display:block;margin-bottom:5px\">Password</label>\n    <input type=\"password\" placeholder=\"Password\" style=\"width:100%;padding:11px 12px;background:#1d2333;border:1px solid #2d3450;border-radius:8px;color:#dde3f5;font-size:1em;outline:none;box-sizing:border-box\">\n  </div>\n  <button type=\"submit\" style=\"width:100%;padding:13px;background:#6c63ff;color:white;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-weight:600\">Login करें</button>\n</form>" }
+      ]
+    },
+    {
+      "cat": "style",
+      "label": "🎨 CSS Styling",
+      "desc": "CSS से आप page को सुंदर बनाते हैं — रंग, fonts, spacing।",
+      "tags": [
+        { "tag": "style", "label": "style — CSS Block", "what": "CSS rules लिखने की जगह।", "example": "जैसे page के लिए design instructions।", "snippet": "<style>\n  body {\n    font-family: Arial, sans-serif;\n    background: #0e1117;\n    color: #dde3f5;\n    margin: 0;\n    padding: 20px;\n  }\n  h1 { color: #6c63ff; font-size: 2em; }\n  p  { line-height: 1.7; }\n</style>\n<h1>Styled Heading</h1>\n<p>यह paragraph styled है।</p>" },
+        { "tag": "css-colors", "label": "Colors — रंग", "what": "Text और background के रंग set करना।", "example": "जैसे room के लिए paint color चुनना।", "snippet": "<div style=\"padding:16px;display:flex;flex-direction:column;gap:10px\">\n  <div style=\"background:#6c63ff;color:white;padding:12px;border-radius:8px\">Purple background</div>\n  <div style=\"background:#ff6b9d;color:white;padding:12px;border-radius:8px\">Pink background</div>\n  <div style=\"background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:12px;border-radius:8px\">Gradient background</div>\n</div>" },
+        { "tag": "css-animation", "label": "Animation (हिलती-डुलती चीजें)", "what": "Elements को move, fade या bounce करना।", "example": "जैसे loading spinner या blinking notification।", "snippet": "<style>\n  @keyframes slideIn {\n    from { opacity: 0; transform: translateY(20px); }\n    to   { opacity: 1; transform: translateY(0); }\n  }\n  .fade-in { animation: slideIn 0.7s ease forwards; }\n</style>\n<div class=\"fade-in\" style=\"background:#1d2333;border-radius:12px;padding:20px;text-align:center;color:#dde3f5\">\n  <p>यह box fade-in होता है!</p>\n</div>" }
+      ]
+    },
+    {
+      "cat": "js",
+      "label": "⚡ JavaScript Basics",
+      "desc": "JavaScript से page में actions जोड़ते हैं जैसे click, count, popup।",
+      "tags": [
+        { "tag": "onclick", "label": "onclick — Click पर Action", "what": "Button click होने पर कुछ करना।", "example": "जैसे button दबाने पर नाम दिखाना।", "snippet": "<p id=\"msg\" style=\"color:#4ecdc4;font-size:1.1em;font-family:Arial\">Button click करें!</p>\n<button onclick=\"document.getElementById('msg').textContent='नमस्ते! CodePad में आपका स्वागत है!'\" style=\"padding:12px 24px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1em\">मुझे click करें!</button>" },
+        { "tag": "counter", "label": "Counter (गिनती)", "what": "Button click करने पर number बढ़ता है।", "example": "जैसे किसी चीज को count करना।", "snippet": "<div style=\"text-align:center;padding:24px;background:#1d2333;border-radius:12px;max-width:260px;margin:0 auto\">\n  <p style=\"color:#7b849e;margin-bottom:10px\">Click किए:</p>\n  <h1 id=\"cnt2\" style=\"color:#6c63ff;font-size:4em;margin:0\">0</h1>\n  <div style=\"display:flex;gap:10px;margin-top:20px;justify-content:center\">\n    <button onclick=\"document.getElementById('cnt2').textContent=parseInt(document.getElementById('cnt2').textContent)+1\" style=\"padding:12px 20px;background:#6c63ff;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.2em\">+</button>\n    <button onclick=\"document.getElementById('cnt2').textContent=0\" style=\"padding:12px 20px;background:#ff4757;color:white;border:none;border-radius:8px;cursor:pointer\">Reset</button>\n  </div>\n</div>" },
+        { "tag": "showhide", "label": "Show/Hide — दिखाएँ/छुपाएँ", "what": "Button click पर content दिखाएँ या छुपाएँ।", "example": "जैसे FAQ में question click पर answer दिखाना।", "snippet": "<div style=\"max-width:360px\">\n  <button onclick=\"var a=document.getElementById('ans2');a.style.display=a.style.display==='none'?'block':'none'\" style=\"width:100%;padding:14px;background:#1d2333;color:#dde3f5;border:1px solid #2d3450;border-radius:10px;cursor:pointer;font-size:1em\">\n    HTML क्या है? (Click करें)\n  </button>\n  <div id=\"ans2\" style=\"display:none;background:#0e1117;border:1px solid #2d3450;border-top:none;border-radius:0 0 10px 10px;padding:16px;color:#7b849e;line-height:1.6\">\n    HTML का मतलब है HyperText Markup Language। यह websites बनाने की भाषा है।\n  </div>\n</div>" }
+      ]
+    },
+    {
+      "cat": "templates",
+      "label": "🏠 Page Templates",
+      "desc": "Ready-made full HTML pages। बस insert करें और customize करें।",
+      "tags": [
+        { "tag": "full-html", "label": "Full HTML Page", "what": "पूरे HTML page का basic structure।", "example": "हर webpage यहीं से शुरू होता है।", "snippet": "<!DOCTYPE html>\n<html lang=\"hi\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>मेरा Page</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body {\n      font-family: Arial, sans-serif;\n      background: #0e1117;\n      color: #dde3f5;\n      padding: 20px;\n    }\n  </style>\n</head>\n<body>\n\n  <h1>नमस्ते दुनिया!</h1>\n  <p>यह मेरा पहला webpage है।</p>\n\n</body>\n</html>" },
+        { "tag": "portfolio", "label": "Portfolio Homepage", "what": "Personal portfolio/resume page।", "example": "जैसे अपनी personal website।", "snippet": "<!DOCTYPE html>\n<html lang=\"hi\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>मेरा Portfolio</title>\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { font-family: Arial, sans-serif; background: #0e1117; color: #dde3f5; }\n    nav { background: #161b25; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }\n    nav .logo { color: #6c63ff; font-weight: 700; }\n    nav a { color: #dde3f5; text-decoration: none; margin-left: 16px; }\n    .hero { min-height: 90vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: linear-gradient(135deg, #1a1a2e, #16213e); }\n    .hero h1 { font-size: 2.5em; margin-bottom: 12px; }\n    .hero h1 span { color: #6c63ff; }\n    .hero p { color: #7b849e; max-width: 480px; line-height: 1.7; margin-bottom: 24px; }\n    .btn { padding: 12px 28px; background: #6c63ff; color: white; border: none; border-radius: 30px; cursor: pointer; }\n    footer { background: #161b25; padding: 20px; text-align: center; color: #7b849e; }\n  </style>\n</head>\n<body>\n  <nav><div class=\"logo\">आपका नाम</div><div><a href=\"#\">Skills</a></div></nav>\n  <section class=\"hero\">\n    <div>\n      <h1>नमस्ते! मैं <span>आपका नाम</span> हूँ</h1>\n      <p>मैं websites बनाता हूँ। मेरी portfolio में आपका स्वागत है!</p>\n      <button class=\"btn\">मेरा काम देखें</button>\n    </div>\n  </section>\n  <footer>&copy; 2024 आपका नाम।</footer>\n</body>\n</html>" }
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+// ════════════════════════════════════════════════
+// LOAD GUIDE DATA FROM JSON BLOCK (safe - no script conflicts)
+// ════════════════════════════════════════════════
+const guideData = JSON.parse(document.getElementById('guideDataJSON').textContent);
+
+// ════════════════════════════════════════════════
+// CORE STATE
+// ════════════════════════════════════════════════
+const editor  = document.getElementById('editor');
+const pv      = document.getElementById('pvframe');
+let curFile   = 'untitled.html';
+let pvTimer   = null;
+let splitDir  = 'v';
+let curView   = 'split';
+let guideLang = 'en';
+let activeCat = 'all';
+let guideBuilt = false;
+
+// Storage with fallback
+function stor(){ try{ return localStorage; }catch(e){ return sessionStorage; } }
+function getFiles(){ try{ return JSON.parse(stor().getItem('cp_f')||'{}'); }catch(e){ return {}; } }
+function setFiles(f){ try{ stor().setItem('cp_f',JSON.stringify(f)); }catch(e){} }
+
+// ════════════════════════════════════════════════
+// DEFAULT CODE
+// ════════════════════════════════════════════════
+const DEF = [
+  '<!DOCTYPE html>',
+  '<html lang="en">',
+  '<head>',
+  '  <meta charset="UTF-8">',
+  '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+  '  <title>My Page</title>',
+  '  <style>',
+  '    * { margin: 0; padding: 0; box-sizing: border-box; }',
+  '    body {',
+  '      min-height: 100vh;',
+  '      display: flex;',
+  '      align-items: center;',
+  '      justify-content: center;',
+  '      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);',
+  '      font-family: Arial, sans-serif;',
+  '    }',
+  '    .card {',
+  '      background: rgba(255,255,255,0.08);',
+  '      border: 1px solid rgba(255,255,255,0.15);',
+  '      border-radius: 20px;',
+  '      padding: 36px 28px;',
+  '      text-align: center;',
+  '      color: white;',
+  '      max-width: 340px;',
+  '      width: 90%;',
+  '    }',
+  '    h1 { font-size: 2em; margin-bottom: 10px; }',
+  '    p  { opacity: 0.75; line-height: 1.6; }',
+  '    button {',
+  '      margin-top: 20px;',
+  '      padding: 12px 24px;',
+  '      background: #6c63ff;',
+  '      color: white;',
+  '      border: none;',
+  '      border-radius: 25px;',
+  '      font-size: 1em;',
+  '      cursor: pointer;',
+  '    }',
+  '  </style>',
+  '</head>',
+  '<body>',
+  '  <div class="card">',
+  '    <h1>Hello! &#x1F44B;</h1>',
+  '    <p>Edit the HTML on the editor panel. Live preview updates automatically.</p>',
+  '    <button onclick="this.textContent=\'Clicked! &#x2705;\'">Tap Me</button>',
+  '  </div>',
+  '</body>',
+  '</html>'
+].join('\n');
+
+editor.value = DEF;
+updatePv();
+syncFname();
+document.getElementById('swPrev').style.background = '#b0bcff';
+
+// ════════════════════════════════════════════════
+// LIVE PREVIEW
+// ════════════════════════════════════════════════
+editor.addEventListener('input', function(){
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(updatePv, 350);
+});
+
+editor.addEventListener('keydown', function(e){
+  if(e.key === 'Tab'){
+    e.preventDefault();
+    var s = editor.selectionStart;
+    editor.value = editor.value.slice(0,s) + '  ' + editor.value.slice(editor.selectionEnd);
+    editor.selectionStart = editor.selectionEnd = s + 2;
+    schPv();
+  }
+});
+
+function schPv(){ clearTimeout(pvTimer); pvTimer = setTimeout(updatePv, 350); }
+
+function updatePv(){
+  try{
+    var blob = new Blob([editor.value], {type:'text/html'});
+    pv.src = URL.createObjectURL(blob);
+  }catch(e){}
+}
+
+// ════════════════════════════════════════════════
+// VIEW MODES
+// ════════════════════════════════════════════════
+function setView(v){
+  curView = v;
+  var m = document.getElementById('mainArea');
+  if(v === 'split'){
+    m.className = 'main split-' + splitDir;
+  } else {
+    m.className = 'main ' + v;
+  }
+  ['vt-ed','vt-sp','vt-pv'].forEach(function(id){
+    document.getElementById(id).classList.remove('on');
+  });
+  var map = {'v-ed':'vt-ed', 'split':'vt-sp', 'v-pv':'vt-pv'};
+  document.getElementById(map[v]).classList.add('on');
+  var db = document.getElementById('dirBtn');
+  db.style.opacity = (v === 'split') ? '1' : '0.4';
+  db.style.pointerEvents = (v === 'split') ? 'auto' : 'none';
+  if(v !== 'v-ed') updatePv();
+}
+
+function toggleDir(){
+  splitDir = (splitDir === 'v') ? 'h' : 'v';
+  if(curView === 'split'){
+    document.getElementById('mainArea').className = 'main split-' + splitDir;
+  }
+  // reset panel sizes
+  var ed = document.getElementById('edPane');
+  var pv2 = document.getElementById('pvPane');
+  ed.style.flex = '1'; ed.style.width = ''; ed.style.height = '';
+  pv2.style.flex = '1'; pv2.style.width = ''; pv2.style.height = '';
+
+  var icon = document.getElementById('dirIcon');
+  var lbl  = document.getElementById('dirLbl');
+  if(splitDir === 'h'){
+    icon.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/>';
+    lbl.textContent = '↔';
+    toast('↔ Left / Right split');
+  } else {
+    icon.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/>';
+    lbl.textContent = '↕';
+    toast('↕ Top / Bottom split');
+  }
+}
+
+// ════════════════════════════════════════════════
+// DRAG DIVIDER TO RESIZE
+// ════════════════════════════════════════════════
+var divEl    = document.getElementById('divider');
+var dragging = false;
+var startPos = 0, startSzA = 0, startSzB = 0;
+
+function startDrag(pos){
+  dragging = true;
+  startPos = pos;
+  startSzA = (splitDir === 'v') ? document.getElementById('edPane').offsetHeight
+                                 : document.getElementById('edPane').offsetWidth;
+  startSzB = (splitDir === 'v') ? document.getElementById('pvPane').offsetHeight
+                                 : document.getElementById('pvPane').offsetWidth;
+}
+
+divEl.addEventListener('mousedown', function(e){
+  startDrag(splitDir === 'v' ? e.clientY : e.clientX);
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = (splitDir === 'v') ? 'row-resize' : 'col-resize';
+});
+
+divEl.addEventListener('touchstart', function(e){
+  var t = e.touches[0];
+  startDrag(splitDir === 'v' ? t.clientY : t.clientX);
+  e.preventDefault();
+}, {passive: false});
+
+document.addEventListener('mousemove', function(e){
+  if(!dragging) return;
+  doResize(splitDir === 'v' ? e.clientY : e.clientX);
+});
+
+document.addEventListener('touchmove', function(e){
+  if(!dragging) return;
+  var t = e.touches[0];
+  doResize(splitDir === 'v' ? t.clientY : t.clientX);
+  e.preventDefault();
+}, {passive: false});
+
+document.addEventListener('mouseup',  function(){ endDrag(); });
+document.addEventListener('touchend', function(){ endDrag(); });
+
+function endDrag(){
+  dragging = false;
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+}
+
+function doResize(pos){
+  var delta = pos - startPos;
+  var ed  = document.getElementById('edPane');
+  var pv2 = document.getElementById('pvPane');
+  var newA = Math.max(60, startSzA + delta);
+  var newB = Math.max(60, startSzB - delta);
+  if(splitDir === 'v'){
+    ed.style.flex  = 'none'; ed.style.height  = newA + 'px'; ed.style.width  = '';
+    pv2.style.flex = 'none'; pv2.style.height = newB + 'px'; pv2.style.width = '';
+  } else {
+    ed.style.flex  = 'none'; ed.style.width  = newA + 'px'; ed.style.height = '';
+    pv2.style.flex = 'none'; pv2.style.width = newB + 'px'; pv2.style.height = '';
+  }
+}
+
+// ════════════════════════════════════════════════
+// FILE OPERATIONS
+// ════════════════════════════════════════════════
+function saveFile(){
+  var f = getFiles();
+  f[curFile] = { code: editor.value, date: new Date().toLocaleString() };
+  setFiles(f);
+  toast('Saved: ' + curFile);
+}
+
+function saveAs(){
+  var n = document.getElementById('saveInp').value.trim();
+  if(!n){ toast('Enter a filename'); return; }
+  if(!n.endsWith('.html')) n += '.html';
+  var f = getFiles();
+  f[n] = { code: editor.value, date: new Date().toLocaleString() };
+  setFiles(f);
+  curFile = n;
+  syncFname();
+  renderFiles();
+  toast('Saved: ' + n);
+}
+
+function renameCur(val){
+  var n = val.trim() || 'untitled.html';
+  if(!n.includes('.')) n += '.html';
+  curFile = n;
+  document.getElementById('fnameInp').value = n;
+}
+
+function newFile(){
+  if(editor.value.trim() && !confirm('Start new file? Unsaved work will be lost.')) return;
+  curFile = 'untitled.html';
+  editor.value = '';
+  syncFname(); updatePv();
+  toast('New file started');
+}
+
+function openFile(name){
+  var f = getFiles();
+  if(!f[name]) return;
+  editor.value = f[name].code;
+  curFile = name;
+  syncFname(); updatePv();
+  closeModal('filesOv');
+  toast('Opened: ' + name);
+}
+
+function delFile(name){
+  if(!confirm('Delete "' + name + '"?')) return;
+  var f = getFiles();
+  delete f[name];
+  setFiles(f);
+  renderFiles();
+  toast('Deleted');
+}
+
+function downloadFile(){
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([editor.value], {type:'text/html'}));
+  a.download = curFile;
+  a.click();
+  toast('Downloading...');
+}
+
+function clearCode(){
+  if(!confirm('Clear all code?')) return;
+  editor.value = '';
+  updatePv();
+  toast('Cleared');
+}
+
+function syncFname(){
+  document.getElementById('fnameInp').value = curFile;
+  document.getElementById('saveInp').value  = curFile;
+}
+
+function renderFiles(){
+  var f = getFiles(), keys = Object.keys(f);
+  var el = document.getElementById('flist');
+  if(!keys.length){ el.innerHTML = '<p class="empty">No saved files yet.</p>'; return; }
+  el.innerHTML = keys.map(function(n){
+    return '<div class="fitem ' + (n===curFile?'on':'') + '" onclick="openFile('+JSON.stringify(n)+')">' +
+      '\uD83D\uDCC4 <span class="fn">' + n + '</span>' +
+      '<span class="fd">' + (f[n].date||'') + '</span>' +
+      '<button class="fdel" onclick="event.stopPropagation();delFile('+JSON.stringify(n)+')">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+// ════════════════════════════════════════════════
+// FONT / SIZE / COLOR
+// ════════════════════════════════════════════════
+function applyFont(v){ editor.style.fontFamily = v; }
+function applySize(v){ editor.style.fontSize = v; }
+function applyColor(v){
+  editor.style.color = v;
+  document.getElementById('swPrev').style.background = v;
+  document.getElementById('colorLbl').textContent = v;
+}
+
+// ════════════════════════════════════════════════
+// TAG INSERTION
+// ════════════════════════════════════════════════
+var SELFCLOSE = ['img','input','br','hr','meta','link','source','area','base','col','embed','wbr'];
+
+function ins(tag){
+  var s   = editor.selectionStart;
+  var e2  = editor.selectionEnd;
+  var sel = editor.value.slice(s, e2);
+  var tn  = tag.split(/[\s>]/)[0];
+  var t   = SELFCLOSE.indexOf(tn) >= 0 ? '<' + tag + '>' : '<' + tag + '>' + sel + '</' + tn + '>';
+  editor.value = editor.value.slice(0,s) + t + editor.value.slice(e2);
+  editor.selectionStart = editor.selectionEnd = s + t.length;
+  editor.focus(); schPv();
+}
+
+function insSelf(tag){
+  var s = editor.selectionStart;
+  var t = '<' + tag + '>';
+  editor.value = editor.value.slice(0,s) + t + editor.value.slice(s);
+  editor.selectionStart = editor.selectionEnd = s + t.length;
+  editor.focus(); schPv();
+}
+
+function insSnippet(code){
+  var s = editor.selectionStart;
+  editor.value = editor.value.slice(0,s) + code + editor.value.slice(s);
+  editor.selectionStart = editor.selectionEnd = s + code.length;
+  editor.focus(); schPv();
+  closeModal('guideOv');
+}
+
+function insBoiler(){
+  if(editor.value.trim() && !confirm('Replace with boilerplate?')) return;
+  editor.value = DEF;
+  updatePv();
+  toast('Boilerplate inserted!');
+}
+
+// ════════════════════════════════════════════════
+// DRAWER & MODALS
+// ════════════════════════════════════════════════
+function openDrawer(){ document.getElementById('drwOv').classList.add('open'); }
+function closeDrawer(){ document.getElementById('drwOv').classList.remove('open'); }
+function openFiles(){ renderFiles(); document.getElementById('saveInp').value = curFile; openModal('filesOv'); }
+function openGuide(){ buildGuide(); openModal('guideOv'); }
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ════════════════════════════════════════════════
+// HTML GUIDE
+// ════════════════════════════════════════════════
+var catLabels = {
+  text:'📝 Text', lists:'📋 Lists', layout:'📦 Layout',
+  tables:'📊 Tables', forms:'📝 Forms', style:'🎨 CSS',
+  js:'⚡ JS', templates:'🏠 Templates'
+};
+
+function buildGuide(){
+  if(guideBuilt) return;
+  guideBuilt = true;
+
+  // Category filter buttons
+  var allCats = [];
+  guideData.en.forEach(function(s){ if(allCats.indexOf(s.cat) < 0) allCats.push(s.cat); });
+  var catsEl = document.getElementById('gCats');
+  var catHTML = '<button class="g-cat-btn on" onclick="filterCat(\'all\')" data-cat="all">All</button>';
+  allCats.forEach(function(c){
+    catHTML += '<button class="g-cat-btn" onclick="filterCat(\'' + c + '\')" data-cat="' + c + '">' + (catLabels[c]||c) + '</button>';
+  });
+  catsEl.innerHTML = catHTML;
+
+  // Build sections for EN and HI
+  buildSections('en');
+  buildSections('hi');
+}
+
+function buildSections(lang){
+  var el = document.getElementById('gs-' + lang);
+  var html = '';
+  guideData[lang].forEach(function(sec){
+    html += '<div class="g-section show" data-cat="' + sec.cat + '">';
+    html += '<div class="gc-t">' + sec.label + '</div>';
+    if(sec.desc) html += '<div class="g-sec-desc">' + sec.desc + '</div>';
+    html += '<div class="g-tags">';
+    sec.tags.forEach(function(t, idx){
+      var dataIdx = 'data-lang="' + lang + '" data-cat="' + sec.cat + '" data-idx="' + idx + '"';
+      html += '<div class="g-tag" ' + dataIdx + ' onclick="showTagDetail(this)">';
+      html += '<code>' + t.tag.split(' ')[0] + '</code>';
+      html += '<small>' + t.label + '</small>';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+}
+
+function getTagData(lang, cat, idx){
+  for(var i = 0; i < guideData[lang].length; i++){
+    if(guideData[lang][i].cat === cat) return guideData[lang][i].tags[parseInt(idx)];
+  }
+  return null;
+}
+
+function filterCat(cat){
+  activeCat = cat;
+  document.querySelectorAll('.g-cat-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.cat === cat);
+  });
+  var selector = '#gs-' + guideLang + ' .g-section';
+  document.querySelectorAll(selector).forEach(function(s){
+    s.style.display = (cat === 'all' || s.dataset.cat === cat) ? 'block' : 'none';
+  });
+}
+
+function setGL(l){
+  guideLang = l;
+  document.querySelectorAll('.g-lang-sec').forEach(function(s){ s.classList.remove('show'); });
+  document.getElementById('gs-' + l).classList.add('show');
+  document.querySelectorAll('.g-lang').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('gl-' + l).classList.add('on');
+  filterCat(activeCat);
+}
+
+function showTagDetail(el){
+  var lang = el.dataset.lang;
+  var cat  = el.dataset.cat;
+  var idx  = el.dataset.idx;
+  var t    = getTagData(lang, cat, idx);
+  if(!t) return;
+
+  // Remove existing popup if any
+  var existing = document.querySelector('.tag-popup');
+  if(existing) existing.remove();
+
+  var popup = document.createElement('div');
+  popup.className = 'tag-popup';
+
+  var safeSnippet = t.snippet
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+
+  popup.innerHTML =
+    '<div class="tag-popup-inner">' +
+      '<div class="tp-name">' +
+        '<span class="tp-code">&lt;' + t.tag.split(' ')[0] + '&gt;</span>' +
+        '<span class="tp-lbl">' + t.label + '</span>' +
+        '<button class="tp-x" onclick="this.closest(\'.tag-popup\').remove()">✕</button>' +
+      '</div>' +
+      '<div class="info-box">' +
+        '<div class="info-box-title" style="color:var(--acc)">🤔 What is it?</div>' +
+        '<div class="info-box-body">' + (t.what||'') + '</div>' +
+      '</div>' +
+      (t.example ? '<div class="info-box">' +
+        '<div class="info-box-title" style="color:var(--acc2)">💡 Real Life Example</div>' +
+        '<div class="info-box-body">' + t.example + '</div>' +
+      '</div>' : '') +
+      '<div class="info-box">' +
+        '<div class="info-box-title" style="color:var(--acc3)">📋 Code</div>' +
+        '<pre class="snip-pre">' + safeSnippet + '</pre>' +
+      '</div>' +
+      '<div class="tp-btns">' +
+        '<button class="tp-insert" id="tp-ins-btn">✅ Insert into Editor</button>' +
+        '<button class="tp-cancel" onclick="this.closest(\'.tag-popup\').remove()">Cancel</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(popup);
+
+  // Store snippet on button to avoid closure scope issues
+  document.getElementById('tp-ins-btn').addEventListener('click', function(){
+    insSnippet(t.snippet);
+    popup.remove();
+  });
+
+  popup.addEventListener('click', function(e){
+    if(e.target === popup) popup.remove();
+  });
+}
+
+// ════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════
+var tTimer;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(function(){ t.classList.remove('show'); }, 2000);
+}
+</script>
+</body>
+</html>
+￼Enter
