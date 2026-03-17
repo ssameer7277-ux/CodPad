@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodePad - HTML Editor Guide & Tutorials</title>
+  <meta name="description" content="Learn HTML coding with CodePad. Complete HTML tutorial for beginners in English and Hindi. Free HTML editor with live preview.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6742500723601536" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.7;
+    }
+    header {
+      background: #6c63ff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 { font-size: 1.8em; margin-bottom: 8px; }
+    header p { opacity: 0.9; }
+    nav {
+      background: #5a52d4;
+      padding: 10px 20px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    nav a:hover { opacity: 1; text-decoration: underline; }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    h2 {
+      color: #6c63ff;
+      font-size: 1.4em;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 8px;
+    }
+    h3 { color: #444; margin: 16px 0 8px; font-size: 1.1em; }
+    p { margin-bottom: 12px; color: #555; }
+    .code-box {
+      background: #1e1e2e;
+      color: #a9b7ff;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.9em;
+      margin: 12px 0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .tip-box {
+      background: #f0eeff;
+      border-left: 4px solid #6c63ff;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 12px 0;
+    }
+    .tip-box strong { color: #6c63ff; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    ul li, ol li { margin-bottom: 6px; color: #555; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .feature-item {
+      background: #f8f8ff;
+      border: 1px solid #e0e0ff;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .feature-item .icon { font-size: 1.8em; margin-bottom: 6px; }
+    .feature-item p { font-size: 0.85em; margin: 0; color: #666; }
+    .faq-item {
+      border-bottom: 1px solid #f0f0f0;
+      padding: 12px 0;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { font-weight: bold; color: #444; margin-bottom: 6px; }
+    .faq-a { color: #666; font-size: 0.95em; }
+    .cta-btn {
+      display: inline-block;
+      background: #6c63ff;
+      color: white;
+      padding: 12px 28px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    footer {
+      background: #333;
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
+      font-size: 0.85em;
+    }
+    .tag {
+      display: inline-block;
+      background: #e8e0ff;
+      color: #6c63ff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      margin: 3px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📱 CodePad — HTML Editor & Live Preview</h1>
+  <p>Learn HTML coding on your mobile phone. Free, fast and beginner friendly!</p>
+</header>
+
+<nav>
+  <a href="index.html">🏠 Home</a>
+  <a href="about.html">📖 Guide</a>
+  <a href="#tutorial">📚 Tutorial</a>
+  <a href="#faq">❓ FAQ</a>
+  <a href="#hindi">🇮🇳 Hindi</a>
+</nav>
+
+<div class="container">
+
+  <!-- WHAT IS CODEPAD -->
+  <div class="card">
+    <h2>🤔 What is CodePad?</h2>
+    <p>CodePad is a free mobile HTML editor that lets you write HTML code and see the live preview instantly on your phone. It is designed for beginners who want to learn web development without needing a computer.</p>
+    <p>With CodePad, you can write HTML, CSS, and JavaScript code directly on your Android phone and see the result in real time. It is perfect for students, beginners, and developers who code on the go.</p>
+    <p>CodePad was built with simplicity in mind. Whether you are a complete beginner or an experienced developer, CodePad provides all the tools you need to build and test web pages directly from your mobile device.</p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="icon">✏️</div>
+        <p>Smart Code Editor</p>
+      </div>
+      <div class="feature-item">
+        <div class="icon">👁️</div>
+        <p>Live Preview</p>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📁</div>
+        <p>File Manager</p>
+      </div>
+      <div class="feature-item">
+        <div class="icon">📖</div>
+        <p>HTML Guide</p>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🎨</div>
+        <p>50+ Font Styles</p>
+      </div>
+      <div class="feature-item">
+        <div class="icon">🇮🇳</div>
+        <p>Hindi Support</p>
+      </div>
+    </div>
+
+    <a href="index.html" class="cta-btn">🚀 Open CodePad Editor</a>
+  </div>
+
+  <!-- HTML TUTORIAL -->
+  <div class="card" id="tutorial">
+    <h2>📚 HTML Tutorial for Beginners</h2>
+    <p>HTML stands for HyperText Markup Language. It is the standard language used to create web pages. Every website you visit on the internet is built using HTML. Learning HTML is the first step to becoming a web developer.</p>
+
+    <h3>What is an HTML Tag?</h3>
+    <p>HTML uses special codes called tags to tell the browser how to display content. A tag has an opening part and a closing part. For example:</p>
+    <div class="code-box">&lt;h1&gt;This is a Heading&lt;/h1&gt;
+&lt;p&gt;This is a paragraph of text.&lt;/p&gt;</div>
+
+    <h3>Basic HTML Page Structure</h3>
+    <p>Every HTML page starts with the same basic structure. Here is what a simple HTML page looks like:</p>
+    <div class="code-box">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;My First Web Page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hello World!&lt;/h1&gt;
+  &lt;p&gt;Welcome to my website.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+
+    <div class="tip-box">
+      <strong>💡 Tip:</strong> You can type this code in CodePad and see the result instantly in the live preview panel!
+    </div>
+
+    <h3>Common HTML Tags</h3>
+    <p>Here are the most commonly used HTML tags that every beginner should know:</p>
+
+    <p><strong>Heading Tags:</strong> Used to create titles and headings on your page.</p>
+    <div class="code-box">&lt;h1&gt;Biggest Heading&lt;/h1&gt;
+&lt;h2&gt;Second Heading&lt;/h2&gt;
+&lt;h3&gt;Third Heading&lt;/h3&gt;</div>
+
+    <p><strong>Paragraph Tag:</strong> Used to write normal text content.</p>
+    <div class="code-box">&lt;p&gt;This is a paragraph. Write your text here.&lt;/p&gt;</div>
+
+    <p><strong>Link Tag:</strong> Used to create clickable links.</p>
+    <div class="code-box">&lt;a href="https://example.com"&gt;Click Here&lt;/a&gt;</div>
+
+    <p><strong>Image Tag:</strong> Used to display images on your page.</p>
+    <div class="code-box">&lt;img src="photo.jpg" alt="My Photo"&gt;</div>
+
+    <p><strong>List Tags:</strong> Used to create bullet point lists.</p>
+    <div class="code-box">&lt;ul&gt;
+  &lt;li&gt;First item&lt;/li&gt;
+  &lt;li&gt;Second item&lt;/li&gt;
+  &lt;li&gt;Third item&lt;/li&gt;
+&lt;/ul&gt;</div>
+
+    <h3>HTML Tags Quick Reference</h3>
+    <p>Here are some important HTML tags:</p>
+    <span class="tag">&lt;div&gt;</span>
+    <span class="tag">&lt;span&gt;</span>
+    <span class="tag">&lt;strong&gt;</span>
+    <span class="tag">&lt;em&gt;</span>
+    <span class="tag">&lt;br&gt;</span>
+    <span class="tag">&lt;hr&gt;</span>
+    <span class="tag">&lt;table&gt;</span>
+    <span class="tag">&lt;form&gt;</span>
+    <span class="tag">&lt;input&gt;</span>
+    <span class="tag">&lt;button&gt;</span>
+    <span class="tag">&lt;header&gt;</span>
+    <span class="tag">&lt;footer&gt;</span>
+    <span class="tag">&lt;nav&gt;</span>
+    <span class="tag">&lt;section&gt;</span>
+    <span class="tag">&lt;article&gt;</span>
+  </div>
+
+  <!-- CSS TUTORIAL -->
+  <div class="card">
+    <h2>🎨 CSS Styling Guide</h2>
+    <p>CSS stands for Cascading Style Sheets. It is used to make your HTML pages look beautiful. With CSS, you can change colors, fonts, sizes, and layouts of your web page elements.</p>
+
+    <h3>How to Add CSS</h3>
+    <p>You can add CSS directly inside your HTML file using the style tag:</p>
+    <div class="code-box">&lt;style&gt;
+  body {
+    background-color: #0e1117;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+  h1 {
+    color: #6c63ff;
+    font-size: 2em;
+  }
+  p {
+    line-height: 1.7;
+    opacity: 0.8;
+  }
+&lt;/style&gt;</div>
+
+    <h3>CSS Colors</h3>
+    <p>Colors in CSS can be written in different ways:</p>
+    <div class="code-box">/* Color name */
+color: red;
+
+/* Hex code */
+color: #6c63ff;
+
+/* RGB */
+color: rgb(108, 99, 255);</div>
+
+    <h3>CSS Box Model</h3>
+    <p>Every HTML element is a box. You can control the space inside and outside the box using padding and margin:</p>
+    <div class="code-box">.box {
+  padding: 20px;   /* Space inside */
+  margin: 10px;    /* Space outside */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}</div>
+
+    <div class="tip-box">
+      <strong>💡 Tip:</strong> Practice writing CSS in CodePad and see the changes instantly in the live preview!
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <div class="card">
+    <h2>⚡ JavaScript Basics</h2>
+    <p>JavaScript is a programming language that makes your web pages interactive. With JavaScript, you can create buttons that respond to clicks, show or hide content, and much more.</p>
+
+    <h3>Your First JavaScript</h3>
+    <div class="code-box">&lt;button onclick="sayHello()"&gt;Click Me&lt;/button&gt;
+&lt;p id="msg"&gt;&lt;/p&gt;
+
+&lt;script&gt;
+  function sayHello() {
+    document.getElementById('msg').textContent = 'Hello World!';
+  }
+&lt;/script&gt;</div>
+
+    <h3>JavaScript Variables</h3>
+    <div class="code-box">&lt;script&gt;
+  let name = "CodePad";
+  let version = 1.0;
+  let isFree = true;
+
+  console.log(name);    // CodePad
+  console.log(version); // 1.0
+&lt;/script&gt;</div>
+  </div>
+
+  <!-- HOW TO USE CODEPAD -->
+  <div class="card">
+    <h2>📱 How to Use CodePad</h2>
+    <p>Using CodePad is very simple. Here is a step by step guide to get started with CodePad on your mobile phone:</p>
+
+    <ol>
+      <li><strong>Open CodePad</strong> — Launch the CodePad app or open the website on your phone browser.</li>
+      <li><strong>Write HTML Code</strong> — Type your HTML code in the editor panel on the top or left side.</li>
+      <li><strong>See Live Preview</strong> — The preview panel automatically updates as you type your code.</li>
+      <li><strong>Switch Views</strong> — Use the view buttons to switch between Editor only, Split view, or Preview only.</li>
+      <li><strong>Save Your Work</strong> — Tap the Save button to save your file. You can save multiple projects.</li>
+      <li><strong>Download HTML File</strong> — Download your finished HTML file to your phone storage.</li>
+      <li><strong>Use HTML Guide</strong> — Tap the HTML Guide button to learn about HTML tags with examples.</li>
+    </ol>
+
+    <div class="tip-box">
+      <strong>💡 Pro Tip:</strong> Use the Quick Tags bar at the bottom to insert HTML tags with just one tap!
+    </div>
+  </div>
+
+  <!-- HINDI SECTION -->
+  <div class="card" id="hindi">
+    <h2>🇮🇳 CodePad के बारे में — Hindi Guide</h2>
+    <p>CodePad एक मुफ्त HTML editor है जो आपके mobile phone पर काम करता है। इसमें आप HTML code लिख सकते हैं और तुरंत live preview देख सकते हैं।</p>
+
+    <h3>HTML क्या है?</h3>
+    <p>HTML का मतलब है HyperText Markup Language। यह वह भाषा है जिससे websites बनती हैं। जब आप कोई website खोलते हैं, तो वह HTML से बनी होती है।</p>
+
+    <h3>CodePad कैसे use करें?</h3>
+    <ol>
+      <li>CodePad app खोलें।</li>
+      <li>ऊपर के editor panel में HTML code लिखें।</li>
+      <li>नीचे preview panel में result देखें।</li>
+      <li>Save button से अपना काम save करें।</li>
+      <li>Download button से HTML file download करें।</li>
+    </ol>
+
+    <h3>पहला HTML Code</h3>
+    <div class="code-box">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;मेरी पहली website&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;नमस्ते दुनिया!&lt;/h1&gt;
+  &lt;p&gt;यह मेरी पहली website है।&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</div>
+
+    <div class="tip-box">
+      <strong>💡 Tip:</strong> CodePad में Hindi fonts भी available हैं। Drawer menu में Font Style से Hindi font select करें!
+    </div>
+
+    <h3>HTML Tags की सूची</h3>
+    <ul>
+      <li><strong>&lt;h1&gt; से &lt;h6&gt;</strong> — Headings के लिए</li>
+      <li><strong>&lt;p&gt;</strong> — Paragraph के लिए</li>
+      <li><strong>&lt;a&gt;</strong> — Links के लिए</li>
+      <li><strong>&lt;img&gt;</strong> — Images के लिए</li>
+      <li><strong>&lt;ul&gt; &lt;li&gt;</strong> — Lists के लिए</li>
+      <li><strong>&lt;div&gt;</strong> — Sections के लिए</li>
+      <li><strong>&lt;style&gt;</strong> — CSS के लिए</li>
+      <li><strong>&lt;script&gt;</strong> — JavaScript के लिए</li>
+    </ul>
+  </div>
+
+  <!-- FAQ -->
+  <div class="card" id="faq">
+    <h2>❓ Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: Is CodePad free to use?</div>
+      <div class="faq-a">Yes! CodePad is completely free. There are no hidden charges or subscriptions required.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: Does CodePad work offline?</div>
+      <div class="faq-a">Yes, CodePad works offline once it is loaded in your browser. You can write and preview HTML code without an internet connection.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: Can I save my HTML files?</div>
+      <div class="faq-a">Yes! You can save multiple HTML projects in CodePad. Your files are saved locally in your browser. You can also download them to your phone storage.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: Is CodePad available in Hindi?</div>
+      <div class="faq-a">Yes! CodePad has full Hindi support. The HTML Guide is available in both English and Hindi. You can also use Hindi/Devanagari fonts in the editor.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: Can I use CodePad to learn HTML?</div>
+      <div class="faq-a">Absolutely! CodePad is designed for beginners. The built-in HTML Guide explains every tag with simple examples and real-life comparisons.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: What is the split screen feature?</div>
+      <div class="faq-a">The split screen feature shows the code editor and live preview side by side. You can choose between top/bottom or left/right split, and drag the divider to resize.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: Can I change the font in the editor?</div>
+      <div class="faq-a">Yes! CodePad offers 50+ font styles including Monospace, Sans-Serif, Serif, Display, and Hindi fonts. You can also change font size and text color.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Q: How do I download my HTML file?</div>
+      <div class="faq-a">Tap the Menu (☰) button, then tap Download .html. Your file will be saved to your phone's download folder.</div>
+    </div>
+  </div>
+
+  <!-- WHY CODEPAD -->
+  <div class="card">
+    <h2>🌟 Why Choose CodePad?</h2>
+    <p>There are many HTML editors available, but CodePad is specially designed for mobile users. Here is why CodePad is the best choice for learning and practicing HTML on your phone:</p>
+
+    <ul>
+      <li><strong>Mobile First Design:</strong> CodePad is built specifically for phone screens with touch-friendly controls.</li>
+      <li><strong>Instant Preview:</strong> See your changes in real time without refreshing the page.</li>
+      <li><strong>Beginner Friendly:</strong> The HTML Guide explains every tag in simple language with real-life examples.</li>
+      <li><strong>Hindi Support:</strong> Full Hindi language support for Indian learners.</li>
+      <li><strong>No Registration:</strong> Start coding immediately without creating an account.</li>
+      <li><strong>Works Offline:</strong> Code anywhere, anytime without internet connection.</li>
+      <li><strong>Free Forever:</strong> CodePad is completely free with no premium plans.</li>
+    </ul>
+
+    <a href="index.html" class="cta-btn">🚀 Start Coding Now — It's Free!</a>
+  </div>
+
+</div>
+
+<footer>
+  <p>&copy; 2024 CodePad — HTML Editor & Live Preview</p>
+  <p style="margin-top:8px">Free mobile HTML editor for beginners | Made with ❤️ in India</p>
+</footer>
+
+</body>
+</html>
